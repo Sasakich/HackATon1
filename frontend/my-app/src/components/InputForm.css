@@ -2,7 +2,8 @@
     display: flex;
     position: fixed;
     bottom: 0;
-    width: 100%;
+    right: 0;
+    width: 50%;
 }
 .chat-input-form{
     width: 100%;
