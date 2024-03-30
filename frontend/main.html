@@ -15,7 +15,8 @@
 </script>
 <script type="text/babel" data-type="module">
 import React, { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot } from 'react-dom/client';/*
+import axios from 'axios'*/
 
 import { useState } from 'react';
 
@@ -32,7 +33,9 @@ let App = function Form() {
     e.preventDefault();
     setStatus('submitting');
     try {
-      await submitForm(answer);
+      // await submitForm(answer);
+      const result = await fetch('http://127.0.0.1:3000');
+      console.log(result)
       setStatus('success');
     } catch (err) {
       setStatus('typing');
