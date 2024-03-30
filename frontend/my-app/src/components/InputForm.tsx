@@ -1,5 +1,7 @@
 import React, { useState, FormEvent, ChangeEvent } from 'react';
 import './InputForm.css';
+import { Input } from "antd";
+import { Button } from "antd";
 
 interface Message {
   text: string;
@@ -9,11 +11,9 @@ interface Message {
 function InputForm() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState<string>('');
-
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
   };
-
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (inputValue.trim() !== '') {
@@ -21,27 +21,26 @@ function InputForm() {
       setInputValue('');
     }
   };
-
   return (
     <div className="chat-container">
-      <div className="chat-messages">
+      {/* <div className="chat-messages">
         {messages.map((message, index) => (
           <div key={index} className={`message ${message.sender}`}>
             {message.text}
           </div>
         ))}
-      </div>
+      </div> */}
       <form onSubmit={handleSubmit} className="chat-input-form">
-        <input
+        <Input
           type="text"
           value={inputValue}
           onChange={handleInputChange}
           placeholder="Type your message..."
           className="chat-input"
         />
-        <button type="submit" className="send-button">
+        <Button className="send-button">
           Send
-        </button>
+        </Button>
       </form>
     </div>
   );
