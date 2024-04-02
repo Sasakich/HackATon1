@@ -49,10 +49,34 @@ function App() {const data = [
   {
     title: 'Ant Design Title 4',
   },
+  {
+    title: 'Ant Design Title 4',
+  },
+  {
+    title: 'Ant Design Title 4',
+  },
+  {
+    title: 'Ant Design Title 4',
+  },
+  {
+    title: 'Ant Design Title 4',
+  },
+  {
+    title: 'Ant Design Title 4',
+  },
+  {
+    title: 'Ant Design Title 4',
+  },
+  {
+    title: 'Ant Design Title 4',
+  },
+  {
+    title: 'Ant Design Title 4',
+  },
 ];
   return (
     <div className="App">
-      <List style= {{width:'40%'}}
+      <List style= {{width:'auto', flexDirection: 'row', minWidth:'40%'}}
         itemLayout="horizontal"
         dataSource={data}
         renderItem={(item, index) => (
