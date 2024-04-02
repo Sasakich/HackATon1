@@ -1,9 +1,10 @@
 .chat-container {
     display: flex;
+    flex-direction: column;
     position: fixed;
     bottom: 0;
     right: 0;
-    width: 50%;
+    width: 60%;
 }
 .chat-input-form{
     width: 100%;
