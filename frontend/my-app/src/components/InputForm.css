@@ -1,0 +1,29 @@
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 60%;
+}
+.chat-input-form{
+    width: 100%;
+}
+.chat-input {
+    border: 1px solid #dadada;
+    height: 52px;
+    width: 84.8%;
+    padding: 10px 30px;
+    vertical-align: bottom;
+    box-sizing: border-box;
+}
+.send-button {
+    float:right;
+    position: relative;
+    border: none;
+    height: 52px;
+    width: 7.6%;
+    background: #dadada;
+    border-right: 1px solid #cbcbcc;
+    cursor: pointer;
+}
