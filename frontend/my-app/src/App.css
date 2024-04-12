@@ -4,4 +4,12 @@
   /* text-align: center; */
   /* width: 100%; */
   align-items: stretch;
+    text-align: center;
+    width: 100%;
+}
+
+.description {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
