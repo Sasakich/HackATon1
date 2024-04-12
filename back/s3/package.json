@@ -1,18 +1,15 @@
 {
-  "name": "back",
+  "name": "example-aws-sdk-client-s3",
   "version": "1.0.0",
-  "description": "bakend kilogramm",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^16.4.5",
-    "identicon": "^3.1.1",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7",
-    "uuid": "^9.0.1"
+    "@aws-sdk/client-s3": "^3.540.0"
   }
 }

@@ -1,6 +1,7 @@
 node_modules
 .idea
 .DS_Store
-=======
 .idea
->>>>>>> 68450e7 (base db added)
+*.db
+.env
+*.json
