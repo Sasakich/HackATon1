@@ -11,7 +11,7 @@
 }
 .chat-input {
     border: 1px solid #dadada;
-    height: 52px;
+    height: 48px;
     width: 84.8%;
     padding: 10px 30px;
     vertical-align: bottom;
@@ -21,9 +21,13 @@
     float:right;
     position: relative;
     border: none;
-    height: 52px;
+    height: 48px;
     width: 7.6%;
     background: #dadada;
     border-right: 1px solid #cbcbcc;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+

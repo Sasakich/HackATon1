@@ -5,6 +5,7 @@ import {Avatar, List} from "antd";
 import {UserItem} from "./Type/Type";
 import VirtualList from 'rc-virtual-list';
 import Modal from './components/Modal';
+import AddContactField from "./components/AddContactField";
 function App() {
     
     const [viewportHeight, setViewportHeight] = useState<number>(window.innerHeight);
@@ -46,7 +47,9 @@ function App() {
     return (
         <div className="App">
             {}
+
             <List style={{width: 'auto', flexDirection: 'row', minWidth: '40%'}}>
+                <AddContactField/>
                 <VirtualList
                     data={data}
                     height={viewportHeight - 52}
