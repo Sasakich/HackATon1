@@ -6,7 +6,7 @@ const path = require('path')
 const express = require('express')
 const bodyParser = require('body-parser');
 const app = express();
-const port = 3000;
+const port = 3001;
 app.use(cors({
     origin: true, // или другой домен/порт вашего фронтенда
     methods: ['GET', 'POST', 'PUT', 'DELETE'],

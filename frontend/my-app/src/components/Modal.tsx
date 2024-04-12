@@ -20,7 +20,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        const url = 'http://localhost:3000/api/users';
+        const url = 'http://localhost:3001/api/users';
         console.log("done1");
         try {
             const response = await fetch(url, {
