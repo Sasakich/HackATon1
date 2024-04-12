@@ -4,9 +4,9 @@ import InputForm from './components/InputForm';
 import {Avatar, List} from "antd";
 import {UserItem} from "./Type/Type";
 import VirtualList from 'rc-virtual-list';
-
+import Modal from './components/Modal';
 function App() {
-    /*Избавиться от копипасты, с помощью передачи в Message нужных props*/
+    
     const [viewportHeight, setViewportHeight] = useState<number>(window.innerHeight);
 
     const fakeDataUrl =
@@ -35,14 +35,17 @@ function App() {
             .then((res) => res.json())
             .then((body) => {
                 setData(data.concat(body.results));
-                // message.success(`${body.results.length} more items loaded!`);
             });
     };
+    const [isModalOpen, setIsModalOpen] = useState(true); // Управление видимостью модального окна
 
+    const handleClose = () => {
+        setIsModalOpen(false); // Функция для закрытия модального окна
+    };
 
     return (
         <div className="App">
-            {/*Информация о чатах*/}
+            {}
             <List style={{width: 'auto', flexDirection: 'row', minWidth: '40%'}}>
                 <VirtualList
                     data={data}
@@ -56,7 +59,6 @@ function App() {
                             <List.Item.Meta
                                 avatar={<Avatar src={item.picture.large}/>}
                                 title={<a href="https://ant.design">{item.name.last}</a>}
-                                /*Здесь будет последнее сообщение*/
                                 description={item.email}
                             />
                             <div>Content</div>
@@ -64,8 +66,12 @@ function App() {
                     )}
                 </VirtualList>
             </List>
-
             <InputForm/>
+            <Modal isOpen={isModalOpen} onClose={handleClose}>
+                <p>Пожалуйста, введите свои данные</p>
+                {}
+            </Modal>
+            {}
         </div>
     );
 }
