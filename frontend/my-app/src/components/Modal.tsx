@@ -20,24 +20,30 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        console.log(username, password);
-        fetch('SomeBackend', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ username, password }),
-        })
-        .then(response => response.json())
-        .then(data => {
-          console.log('Success:', data);
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-        });
-        onClose();
-    };
+        const url = 'http://localhost:3000/api/users';
+        console.log("done1");
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ login: username, password: password }),
+            });
 
+            console.log("gotten resp");
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            console.log('Success:', data);
+            onClose();
+        } catch (error) {
+            console.error('Error:', error);
+        }
+        console.log("done");
+    };
     if (!isOpen) return null;
 
     return (

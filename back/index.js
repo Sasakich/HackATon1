@@ -1,10 +1,18 @@
 const http = require('http');
 const sqlite3 = require("sqlite3");
 const {open} = require("sqlite");
+const cors = require('cors');
 const path = require('path')
 const express = require('express')
+const bodyParser = require('body-parser');
 const app = express();
 const port = 3000;
+app.use(cors({
+    origin: true, // или другой домен/порт вашего фронтенда
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json());
 (async () => {
     const db = await open({
         filename: path.resolve(__dirname, './database/database.db'),
@@ -30,6 +38,26 @@ const port = 3000;
             res.send(a)
         })()
     });
+    app.post('/api/users', async (req, res) => {
+        const { login, password } = req.body;
+        console.log("got message to post");
+
+        try {
+            const user = await db.get('SELECT id FROM users WHERE login = ? AND password = ?', [login, password]);
+            if (user) {
+                console.log("User exists, sending existing ID");
+                res.status(200).send({ lastId: user.id });
+            } else {
+                const { lastID } = await db.run('INSERT INTO users (login, password) VALUES (?, ?)', [login, password]);
+                console.log("User created, sending new ID");
+                res.status(201).send({ lastId: lastID });
+            }
+        } catch (err) {
+            console.error("Database error: ", err.message);
+            res.status(500).send({ error: 'Database error', details: err.message });
+        }
+    });
+
     app.get('/api/users/:tagId', (req, res) => {
         (async () => {
             let userId = req.params.tagId
@@ -105,4 +133,4 @@ const port = 3000;
 
 
 
-//http://localhost/message:3000
+//http://localhost:3000/api/users
