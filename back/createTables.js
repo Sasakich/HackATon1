@@ -35,17 +35,18 @@ const {open} = require("sqlite");
     chatId int NOT NULL,
     userId int NOT NULL,
     createdAt DATE NOT NULL,
-    updatedAt DATE
+    updatedAt DATE NOT NULL,
+    message varchar(2083)                         
     )
   `)
-  await db.exec(`INSERT INTO messages VALUES (null, 0, 0, ${Date.now()}, ${Date.now()})`)
+  await db.exec(`INSERT INTO messages VALUES (null, 0, 0, ${Date.now()}, ${Date.now()}, "Hello!")`)
   a = await db.all('SELECT * FROM messages');
   console.log(a);
   await db.exec(`
   CREATE TABLE IF NOT EXISTS chatsToUsers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     idChat int NOT NULL,
-    idUser int NOT NULL
+    idUser int NOT NULL                                      
     )
   `)
   await db.exec('INSERT INTO chatsToUsers VALUES (null, 0, 0)')
