@@ -23,6 +23,25 @@ open({
     
     app.use(express.json());
 
+    // Route to get user by login and password
+    app.get('/getUser', async (req, res) => {
+        const { login, password } = req.query;
+        try {
+            const user = await db.get(
+                'SELECT * FROM users WHERE login = ? AND password = ?',
+                [login, password]
+            );
+            if (user) {
+                res.json(user);
+            } else {
+                res.status(404).send('User not found');
+            }
+        } catch (error) {
+            console.error('Error fetching user:', error);
+            res.status(500).send('Error fetching user');
+        }
+    });
+
     // Route to get all chats
     app.get('/getChats', async (req, res) => {
         try {
