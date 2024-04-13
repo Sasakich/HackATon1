@@ -14,12 +14,12 @@ const port = process.env.PORT || 3001;
 server.listen(port, () => {
     console.log("Connected")
 })
-const io = require('socket.io')(server)
-app.use(cors({
-    origin: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors());
+const io = require('socket.io')(server, {
+    cors: {
+        origin: 'http://localhost:3000'
+    }
+})
 open({
     filename: './database/database.db',
     driver: sqlite3.Database
@@ -27,6 +27,43 @@ open({
     console.log("Database connected");
     
     app.use(express.json());
+
+    // Route to get all messages
+    app.get('/getAllMessages', async (req, res) => {
+        try {
+            const messages = await db.all('SELECT * FROM messages');
+            res.json(messages);
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+            res.status(500).send('Error fetching messages');
+        }
+    });
+
+    // Route to create a new chat
+    app.post('/createChat', async (req, res) => {
+        const { name, userIds } = req.body;
+        try {
+            // Insert chat into chats table
+            const result = await db.run(
+                'INSERT INTO chats (name) VALUES (?)',
+                name
+            );
+            const chatId = result.lastID;
+
+            // Insert records into chatsToUsers table
+            for (const userId of userIds) {
+                await db.run(
+                    'INSERT INTO chatsToUsers (idChat, idUser) VALUES (?, ?)',
+                    [chatId, userId]
+                );
+            }
+
+            res.status(201).send('Chat created successfully');
+        } catch (error) {
+            console.error('Error creating chat:', error);
+            res.status(500).send('Error creating chat');
+        }
+    });
 
     // Route to get user by login and password
     app.get('/getUser', async (req, res) => {
@@ -136,16 +173,29 @@ open({
         console.log('User connected');
 
         socket.on('chat message', async message => {
-            // Insert the chat message into the 'messages' table
-            const createdAt = new Date().toISOString();
-            const updatedAt = createdAt;
-            await db.run(
-                'INSERT INTO messages (chatId, userId, createdAt, updatedAt, message) VALUES (?, ?, ?, ?, ?)',
-                [message.chatId, message.userId, createdAt, updatedAt, message.text]
-            );
+            const { chatId, userId, text } = req.body;
+            try {
+                const createdAt = new Date().toISOString();
+                const updatedAt = createdAt;
+                await db.run(
+                    'INSERT INTO messages (chatId, userId, createdAt, updatedAt, message) VALUES (?, ?, ?, ?, ?)',
+                    [chatId, userId, createdAt, updatedAt, text]
+                )
+                socket.emit('chat message', message)
+            } catch (error) {
+                console.error('Error sending message:', error);
+                res.status(500).send('Error sending message');
+            }
+            // // Insert the chat message into the 'messages' table
+            // const createdAt = new Date().toISOString();
+            // const updatedAt = createdAt;
+            // await db.run(
+            //     'INSERT INTO messages (chatId, userId, createdAt, updatedAt, message) VALUES (?, ?, ?, ?, ?)',
+            //     [message.chatId, message.userId, createdAt, updatedAt, message.text]
+            // );
 
-            // Broadcast the chat message to all connected clients
-            io.emit('chat message', message);
+            // // Broadcast the chat message to all connected clients
+            // io.emit('chat message', message);
         });
 
         socket.on('disconnect', () => {
