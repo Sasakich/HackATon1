@@ -1,10 +1,19 @@
 const http = require('http');
+const hostname = '127.0.0.1';
 const sqlite3 = require("sqlite3");
 const {open} = require("sqlite");
+const cors = require('cors');
 const path = require('path')
 const express = require('express')
+const bodyParser = require('body-parser');
 const app = express();
-const port = 3000;
+const port = 3001;
+app.use(cors({
+    origin: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json());
 (async () => {
     const db = await open({
         filename: path.resolve(__dirname, './database/database.db'),
@@ -30,13 +39,33 @@ const port = 3000;
             res.send(a)
         })()
     });
-    app.get('/api/users/:tagId', (req, res) => {
+    app.post('/api/users', async (req, res) => {
+        const { login, password } = req.body;
+        console.log("got message to post");
+        try {
+            const user = await db.get('SELECT id FROM users WHERE login = ? AND password = ?', [login, password]);
+            if (user) {
+                console.log("User exists, sending existing ID");
+                res.status(200).send({ lastId: user.id });
+            } else {
+                const { lastID } = await db.run('INSERT INTO users (login, password) VALUES (?, ?)', [login, password]);
+                console.log("User created, sending new ID");
+                res.status(201).send({ lastId: lastID, login: login});
+            }
+        } catch (err) {
+            console.error("Database error: ", err.message);
+            res.status(500).send({ error: 'Database error', details: err.message });
+        }
+    });
+
+    app.get('/api/users/:login', (req, res) => {
         (async () => {
-            let userId = req.params.tagId
-            let a = await db.all('SELECT * FROM users WHERE id = ?', userId)
+            let userId = req.params.login
+            let a = await db.all('SELECT * FROM users WHERE login = ?', userId)
             res.send(a)
         })()
     });
+
     app.get('/api/messages', (req, res) => {
         (async () => {
             let a = await db.all('SELECT * FROM messages')
@@ -49,9 +78,34 @@ const port = 3000;
             res.send(a)
         })()
     })
-    app.get('/api/chats/:chatId', (req, res) => {
+    app.post('/api/chats', async (req, res) => {
+        const { user1_id, user2_id, chat_name} = req.body;
+        try {
+            const existingChat = await db.get(`
+            SELECT c.id, c.name, c.icon
+            FROM chats c
+            JOIN chatsToUsers ctu1 ON c.id = ctu1.idChat AND ctu1.idUser = ?
+            JOIN chatsToUsers ctu2 ON c.id = ctu2.idChat AND ctu2.idUser = ?
+        `, [user1_id, user2_id]);
+            if (existingChat) {
+                console.log("Chat already exists");
+                res.status(200).send({ chat: existingChat });
+            } else {
+                const { lastID: newChatId } = await db.run('INSERT INTO chats (name, icon) VALUES (?, ?)', [chat_name, 'Default Icon Path']);
+                await db.run('INSERT INTO chatsToUsers (idChat, idUser) VALUES (?, ?)', [newChatId, user1_id]);
+                await db.run('INSERT INTO chatsToUsers (idChat, idUser) VALUES (?, ?)', [newChatId, user2_id]);
+                console.log("New chat created");
+                res.status(201).send({ chat: { id: newChatId, name: chat_name, icon: 'Default Icon Path' } });
+            }
+        } catch (err) {
+            console.error("Database error: ", err.message);
+            res.status(500).send({ error: 'Database error', details: err.message });
+        }
+    });
+
+    app.get('/api/chats/:userId', (req, res) => {
         (async () => {
-            let a = await db.all('SELECT * FROM chats WHERE id = ?', req.params.chatId)
+            let a = await db.all('SELECT * FROM chatsToUsers WHERE idUser = ?', req.params.userId)
             res.send(a)
         })()
     })
@@ -60,6 +114,26 @@ const port = 3000;
             let a = await db.all('SELECT * FROM messages WHERE id = ?', req.params.messageId)
             res.send(a)
         })()
+    });
+    app.post('/api/messages', async (req, res) => {
+        const {chat_id, user_id, message, time} = req.body;
+        try {
+            await db.run('INSERT INTO messages (chatId, userId, createdAt, updatedAt, message) VALUES (?, ?, ?, ?, ?)', [chat_id, user_id,time, Date.now(), message]);
+            res.status(200).send({message: message})
+        } catch (err) {
+            console.error("Database error: ", err.message);
+            res.status(500).send({ error: 'Database error', details: err.message });
+        }
+    });
+    app.post('/api/messages/send', async (req, res) => {
+        const {chat_id} = req.body;
+        try {
+            let messages = await db.all('SELECT * FROM messages WHERE chatId = ?', chat_id);
+            res.status(200).send({messages: messages})
+        } catch (err) {
+            console.error("Database error: ", err.message);
+            res.status(500).send({ error: 'Database error', details: err.message });
+        }
     });
     // app.put('/api/chats/:chatId', (req, res) => {
     //     (async () => {
@@ -97,7 +171,6 @@ const port = 3000;
     //     res.send("tagId is set to " + req.params.tagId);
     //     console.log(data[req.params.tagId])
     // });
-
     app.listen(port, () => {
         console.log(`Example app listening on port ${port}`)
     });
@@ -105,4 +178,4 @@ const port = 3000;
 
 
 
-//http://localhost/message:3000
+//http://localhost:3000/api/users
