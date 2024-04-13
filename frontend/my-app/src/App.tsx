@@ -35,7 +35,7 @@ function App() {
         }
         socket.on('chat message', handler);
         return () => {
-            socket.off('chat massage', handler);
+            socket.off('chat message', handler);
         }
     }, []);
 
