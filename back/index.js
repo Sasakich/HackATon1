@@ -96,7 +96,7 @@ open({
     });
 
     // Route to delete a user
-    app.delete('/users/:userId', async (req, res) => {
+    app.delete('/deleteUser/:userId', async (req, res) => {
         const userId = req.params.userId;
         try {
             await db.run(
@@ -111,7 +111,7 @@ open({
     });
 
     // Route to delete a chat
-    app.delete('/chats/:chatId', async (req, res) => {
+    app.delete('/deleteChat/:chatId', async (req, res) => {
         const chatId = req.params.chatId;
         try {
             // Delete chat from chats table
@@ -131,8 +131,6 @@ open({
                 'DELETE FROM messages WHERE chatId = ?',
                 chatId
             );
-
-            res.status(200).send('Chat deleted successfully');
         } catch (error) {
             console.error('Error deleting chat:', error);
             res.status(500).send('Error deleting chat');
@@ -140,14 +138,13 @@ open({
     });
 
     // Route to add a new user
-    app.post('/users', async (req, res) => {
+    app.post('/addUser', async (req, res) => {
         const { login, password, icon } = req.body;
         try {
             await db.run(
                 'INSERT INTO users (login, password, icon) VALUES (?, ?, ?)',
                 [login, password, icon]
             );
-            res.status(201).send('User added successfully');
         } catch (error) {
             console.error('Error adding user:', error);
             res.status(500).send('Error adding user');
@@ -155,14 +152,13 @@ open({
     });
 
     // Route to add a new chat
-    app.post('/chats', async (req, res) => {
+    app.post('/addChat', async (req, res) => {
         const { name, icon } = req.body;
         try {
             await db.run(
                 'INSERT INTO chats (name, icon) VALUES (?, ?)',
                 [name, icon]
             );
-            res.status(201).send('Chat added successfully');
         } catch (error) {
             console.error('Error adding chat:', error);
             res.status(500).send('Error adding chat');
