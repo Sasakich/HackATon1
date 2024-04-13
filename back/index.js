@@ -11,6 +11,7 @@ const express = require('express')
 const app = express();
 const server = require('http').Server(app);
 const port = process.env.PORT || 3001;
+const sockets = []
 server.listen(port, () => {
     console.log("Connected")
 })
@@ -167,6 +168,8 @@ open({
     io.on('connection', socket => {
         console.log('User connected');
 
+        sockets.push(socket)
+
         socket.on('chat message', async message => {
             socket.emit('chat message', message);
             console.log(message)
@@ -217,6 +220,7 @@ open({
 
         socket.on('disconnect', () => {
             console.log('User disconnected');
+            sockets.delete(socket)
         });
     });
 }).catch(error => {
