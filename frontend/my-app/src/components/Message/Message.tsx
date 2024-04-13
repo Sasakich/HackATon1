@@ -54,7 +54,7 @@ const Message: FC<{messages: string[]}> = ({messages}) => {
                             // title={<a href="https://ant.design">{item.name.last}</a>}
                             description={item}
                         />
-                        <div>Content</div>
+                        <div>это я</div>
                     </List.Item>
                 )}
             </VirtualList>

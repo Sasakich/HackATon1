@@ -11,7 +11,7 @@ const express = require('express')
 const app = express();
 const server = require('http').Server(app);
 const port = process.env.PORT || 3001;
-const sockets = []
+let sockets = []
 server.listen(port, () => {
     console.log("Connected")
 })
@@ -171,7 +171,10 @@ open({
         sockets.push(socket)
 
         socket.on('chat message', async message => {
-            socket.emit('chat message', message);
+            
+            for (const socke of sockets) {
+                socke.emit('chat message', message);
+            }
             console.log(message)
             // const { chatId, userId, text } = req.body;
             // try {
@@ -196,7 +199,9 @@ open({
                     'UPDATE messages SET message = ? WHERE id = ? SET updatedAt = ?',
                     [text, messageId, updatedAt]
                 )
-                socket.emit('chat message', message)
+                
+                    socket.emit('chat message', message)
+                
             } catch (error) {
                 console.error('Error sending message:', error);
                 res.status(500).send('Error sending message');
@@ -220,7 +225,7 @@ open({
 
         socket.on('disconnect', () => {
             console.log('User disconnected');
-            sockets.delete(socket)
+            sockets = sockets.filter(s => s !== socket)
         });
     });
 }).catch(error => {
