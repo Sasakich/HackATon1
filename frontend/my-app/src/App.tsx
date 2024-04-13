@@ -6,23 +6,37 @@ import {UserItem} from "./Type/Type";
 import VirtualList from 'rc-virtual-list';
 import Modal from './components/Modal';
 import AddContactField from "./components/AddContactField";
+import {io} from 'socket.io-client';
+import {socket} from "./models/socket";
+let init = false;
+
 function App() {
-    
+
+    const [messages, setMessages] = useState<string[]>([]);
     const [viewportHeight, setViewportHeight] = useState<number>(window.innerHeight);
 
     const fakeDataUrl =
         'https://randomuser.me/api/?results=20&inc=name,gender,email,nat,picture&noinfo';
     const [data, setData] = useState<UserItem[]>([]);
 
+    // useEffect(() => {
+    //     const handleResize = () => {
+    //         setViewportHeight(window.innerHeight);
+    //     };
+    //     window.addEventListener('resize', handleResize);
+    //     appendData();
+    //     return () => {
+    //         window.removeEventListener('resize', handleResize);
+    //     };
+    // }, []);
     useEffect(() => {
-        const handleResize = () => {
-            setViewportHeight(window.innerHeight);
-        };
-        window.addEventListener('resize', handleResize);
-        appendData();
+        const handler = (message: string) => {
+            setMessages(m => [...m, message])
+        }
+        socket.on('chat message', handler);
         return () => {
-            window.removeEventListener('resize', handleResize);
-        };
+            socket.off('chat massage', handler);
+        }
     }, []);
 
     const onScroll = (e: React.UIEvent<HTMLElement, UIEvent>) => {
@@ -69,11 +83,11 @@ function App() {
                     )}
                 </VirtualList>
             </List>
-            <InputForm/>
-            <Modal isOpen={isModalOpen} onClose={handleClose}>
-                <p>Пожалуйста, введите свои данные</p>
-                {}
-            </Modal>
+            <InputForm messages={messages}/>
+            {/*<Modal isOpen={isModalOpen} onClose={handleClose}>*/}
+            {/*    <p>Пожалуйста, введите свои данные</p>*/}
+            {/*    {}*/}
+            {/*</Modal>*/}
             {}
         </div>
     );

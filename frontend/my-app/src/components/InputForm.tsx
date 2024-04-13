@@ -1,8 +1,9 @@
-import React, {useState, FormEvent, ChangeEvent} from 'react';
+import React, {useState, FormEvent, ChangeEvent, FC} from 'react';
 import './InputForm.css';
 import { Input} from "antd";
 import {Button} from "antd";
 import Message from "./Message/Message";
+import {socket} from "../models/socket";
 
 
 interface Message {
@@ -12,8 +13,8 @@ interface Message {
 
 
 
-function InputForm() {
-    const [messages, setMessages] = useState<Message[]>([]);
+const InputForm: FC<{messages: string[]}> = ({messages}) => {
+    //const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState<string>('');
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -23,9 +24,12 @@ function InputForm() {
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (inputValue.trim() !== '') {
-            setMessages([...messages, {text: inputValue, sender: 'user'}]);
-            setInputValue('');
+            socket.emit('chat message', inputValue)
         }
+        // if (inputValue.trim() !== '') {
+        //     setMessages([...messages, {text: inputValue, sender: 'user'}]);
+        //     setInputValue('');
+        // }
     };
 
 
@@ -33,7 +37,7 @@ function InputForm() {
     return (
         <div className="chat-container">
 
-            <Message/>
+            <Message messages={messages}/>
             <form onSubmit={handleSubmit} className="chat-input-form" >
                 <Input
                     type="text"
@@ -42,7 +46,7 @@ function InputForm() {
                     placeholder="Type your message..."
                     className="chat-input"
                 />
-                <Button className="send-button">
+                <Button htmlType={'submit'} className="send-button">
                     Send
                 </Button>
             </form>

@@ -168,19 +168,21 @@ open({
         console.log('User connected');
 
         socket.on('chat message', async message => {
-            const { chatId, userId, text } = req.body;
-            try {
-                const createdAt = new Date().toISOString();
-                const updatedAt = createdAt;
-                await db.run(
-                    'INSERT INTO messages (chatId, userId, createdAt, updatedAt, message) VALUES (?, ?, ?, ?, ?)',
-                    [chatId, userId, createdAt, updatedAt, text]
-                )
-                socket.emit('chat message', message)
-            } catch (error) {
-                console.error('Error sending message:', error);
-                res.status(500).send('Error sending message');
-            }
+            socket.emit('chat message', message);
+            console.log(message)
+            // const { chatId, userId, text } = req.body;
+            // try {
+            //     const createdAt = new Date().toISOString();
+            //     const updatedAt = createdAt;
+            //     await db.run(
+            //         'INSERT INTO messages (chatId, userId, createdAt, updatedAt, message) VALUES (?, ?, ?, ?, ?)',
+            //         [chatId, userId, createdAt, updatedAt, text]
+            //     )
+            //     socket.emit('chat message', message)
+            // } catch (error) {
+            //     console.error('Error sending message:', error);
+            //     res.status(500).send('Error sending message');
+            // }
         });
 
         socket.on('update message', async message => {

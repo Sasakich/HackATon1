@@ -11,6 +11,8 @@ interface ModalProps {
 const Modal: FC<ModalProps> = ({ isOpen, onClose }) => {
     const [username, password] = useUnit([$userInput, $password]);
 
+
+
     const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         userChange(event.target.value);
     };

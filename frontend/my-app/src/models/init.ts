@@ -12,7 +12,6 @@ interface Login {
 
 }
 
-
 export const postUser = async (login: Login) => {
     const res = await fetch(
         'http://localhost:3001/api/users', {
