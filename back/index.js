@@ -50,7 +50,7 @@ app.use(express.json());
             } else {
                 const { lastID } = await db.run('INSERT INTO users (login, password) VALUES (?, ?)', [login, password]);
                 console.log("User created, sending new ID");
-                res.status(201).send({ lastId: lastID });
+                res.status(201).send({ lastId: lastID, login: login});
             }
         } catch (err) {
             console.error("Database error: ", err.message);
