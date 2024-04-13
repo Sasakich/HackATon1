@@ -43,9 +43,9 @@ const port = 3000;
             res.send(a)
         })()
     });
-    app.get('/api/chats', (req, res) => {
+    app.get('/api/chats/:userId', (req, res) => {
         (async () => {
-            let a = await db.all('SELECT * FROM chats')
+            let a = await db.all('SELECT * FROM chatsToUsers WHERE idUser = ?', req.params.userId)
             res.send(a)
         })()
     })
