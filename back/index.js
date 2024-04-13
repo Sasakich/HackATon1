@@ -186,16 +186,6 @@ open({
                 console.error('Error sending message:', error);
                 res.status(500).send('Error sending message');
             }
-            // // Insert the chat message into the 'messages' table
-            // const createdAt = new Date().toISOString();
-            // const updatedAt = createdAt;
-            // await db.run(
-            //     'INSERT INTO messages (chatId, userId, createdAt, updatedAt, message) VALUES (?, ?, ?, ?, ?)',
-            //     [message.chatId, message.userId, createdAt, updatedAt, message.text]
-            // );
-
-            // // Broadcast the chat message to all connected clients
-            // io.emit('chat message', message);
         });
 
         socket.on('disconnect', () => {
