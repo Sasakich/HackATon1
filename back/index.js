@@ -183,6 +183,36 @@ open({
             }
         });
 
+        socket.on('update message', async message => {
+            const { text, messageId } = req.body;
+            try {
+                const updatedAt = new Date().toISOString();
+                await db.run(
+                    'UPDATE messages SET message = ? WHERE id = ? SET updatedAt = ?',
+                    [text, messageId, updatedAt]
+                )
+                socket.emit('chat message', message)
+            } catch (error) {
+                console.error('Error sending message:', error);
+                res.status(500).send('Error sending message');
+            }
+        });        
+
+        //todo
+        socket.on('delete message', async message => {
+            const { messageId } = req.body;
+            try {
+                await db.run(
+                    'DELETE FROM messages WHERE id = ?',
+                        messageId
+                )
+                // socket.emit('chat message', message)
+            } catch (error) {
+                console.error('Error sending message:', error);
+                res.status(500).send('Error sending message');
+            }
+        });
+
         socket.on('disconnect', () => {
             console.log('User disconnected');
         });
