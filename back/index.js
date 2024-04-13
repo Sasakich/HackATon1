@@ -2,7 +2,7 @@
 // const hostname = '127.0.0.1';
 const sqlite3 = require("sqlite3");
 const {open} = require("sqlite");
-// const cors = require('cors');
+const cors = require('cors');
 // const path = require('path')
 const express = require('express')
 // const bodyParser = require('body-parser');
@@ -15,6 +15,11 @@ server.listen(port, () => {
     console.log("Connected")
 })
 const io = require('socket.io')(server)
+app.use(cors({
+    origin: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 open({
     filename: './database/database.db',
     driver: sqlite3.Database
