@@ -103,7 +103,6 @@ open({
                 'DELETE FROM users WHERE id = ?',
                 userId
             );
-            res.status(200).send('User deleted successfully');
         } catch (error) {
             console.error('Error deleting user:', error);
             res.status(500).send('Error deleting user');
