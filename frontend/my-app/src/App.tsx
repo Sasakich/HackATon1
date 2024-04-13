@@ -41,6 +41,7 @@ function App() {
     const [isModalOpen, setIsModalOpen] = useState(true); // Управление видимостью модального окна
 
     const handleClose = () => {
+        console.log("Closing")
         setIsModalOpen(false); // Функция для закрытия модального окна
     };
 

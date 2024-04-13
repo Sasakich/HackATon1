@@ -5,10 +5,10 @@ import {useUnit} from "effector-react"
 interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
-
+    children: ReactNode;
 }
 
-const Modal: FC<ModalProps> = ({ isOpen, onClose }) => {
+const Modal: FC<ModalProps> = ({ isOpen, onClose , children}) => {
     const [username, password] = useUnit([$userInput, $password]);
 
     const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,6 +22,7 @@ const Modal: FC<ModalProps> = ({ isOpen, onClose }) => {
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         buttonSubmit();
+        onClose();
         console.log("done1");
 
             // const response = await fetch(url, {
@@ -37,12 +38,9 @@ const Modal: FC<ModalProps> = ({ isOpen, onClose }) => {
             //     throw new Error('Network response was not ok');
             // }
 
-
-
-            onClose();
         console.log("done");
     };
-    // if (!isOpen )return null;
+    if (!isOpen )return null;
 
     return (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

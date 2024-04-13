@@ -3,7 +3,8 @@ import './InputForm.css';
 import { Input} from "antd";
 import {Button} from "antd";
 import Message from "./Message/Message";
-
+import { $user } from "../models/init"
+import { $user2 } from "../models/user2"
 
 interface Message {
     text: string;

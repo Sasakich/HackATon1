@@ -169,7 +169,8 @@ open({
         console.log('User connected');
 
         socket.on('chat message', async message => {
-            const { chatId, userId, text } = req.body;
+            console.log(message)
+            const { chatId, userId, text } = message;
             try {
                 const createdAt = new Date().toISOString();
                 const updatedAt = createdAt;
