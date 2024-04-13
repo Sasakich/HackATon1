@@ -1,48 +1,50 @@
-import React, { FC, useState, ReactNode } from 'react';
-import {$password, $user, $userInput, buttonSubmit, passwordChange, userChange} from "../models/init";
-import {useUnit} from "effector-react"
+import React, { useState, ReactNode } from 'react';
 
 interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
-
+    children: ReactNode;
 }
 
-const Modal: FC<ModalProps> = ({ isOpen, onClose }) => {
-    const [username, password] = useUnit([$userInput, $password]);
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
 
     const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        userChange(event.target.value);
+        setUsername(event.target.value);
     };
 
     const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        passwordChange(event.target.value);
+        setPassword(event.target.value);
     };
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        buttonSubmit();
+        const url = 'http://localhost:3001/users';
         console.log("done1");
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ login: username, password: password }),
+            });
 
-            // const response = await fetch(url, {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({ login: username, password: password }),
-            // });
-            //
-            // console.log("gotten resp");
-            // if (!response.ok) {
-            //     throw new Error('Network response was not ok');
-            // }
+            console.log("gotten resp");
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
 
-
-
+            const data = await response.json();
+            console.log('Success:', data);
             onClose();
+        } catch (error) {
+            console.error('Error:', error);
+        }
         console.log("done");
     };
-    // if (!isOpen )return null;
+    if (!isOpen) return null;
 
     return (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -65,7 +67,7 @@ const Modal: FC<ModalProps> = ({ isOpen, onClose }) => {
                 </form>
             </div>
         </div>
-);
+    );
 };
 
 export default Modal;

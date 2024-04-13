@@ -110,7 +110,7 @@ open({
                 'INSERT INTO users (login, password, icon) VALUES (?, ?, ?)',
                 [login, password, icon]
             );
-            res.status(201).send('User added successfully');
+            res.status(201).send({login: login, password: password, icon: icon});
         } catch (error) {
             console.error('Error adding user:', error);
             res.status(500).send('Error adding user');
