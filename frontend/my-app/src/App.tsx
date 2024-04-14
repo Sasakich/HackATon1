@@ -84,10 +84,9 @@ function App() {
                 </VirtualList>
             </List>
             <InputForm messages={messages}/>
-            {/*<Modal isOpen={isModalOpen} onClose={handleClose}>*/}
-            {/*    <p>Пожалуйста, введите свои данные</p>*/}
-            {/*    {}*/}
-            {/*</Modal>*/}
+            <Modal isOpen={isModalOpen} onClose={handleClose}/>
+                {}
+
             {}
         </div>
     );
