@@ -38,11 +38,11 @@ function App() {
                 setData(data.concat(body.results));
             });
     };
-    const [isModalOpen, setIsModalOpen] = useState(true); // Управление видимостью модального окна
+    const [isModalOpen, setIsModalOpen] = useState(true);
 
     const handleClose = () => {
         console.log("Closing")
-        setIsModalOpen(false); // Функция для закрытия модального окна
+        setIsModalOpen(false);
     };
 
     return (
