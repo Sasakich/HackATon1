@@ -13,3 +13,8 @@ export interface UserItem {
         thumbnail: string;
     };
 }
+
+export interface MessageData {
+    text: string;
+    sender: string;
+}

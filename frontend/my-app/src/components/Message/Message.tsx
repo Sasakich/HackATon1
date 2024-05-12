@@ -1,23 +1,16 @@
-import {Avatar, List, message} from "antd";
-import React, {FC, useEffect, useState} from "react";
+import { List } from "antd";
+import React, { FC, useEffect, useState } from "react";
 import VirtualList from 'rc-virtual-list';
-import {UserItem} from "../../Type/Type";
 
-const Message: FC<{messages: string[]}> = ({messages}) => {
-    console.log(messages);
-
+const Message: FC<{ messages: string[] }> = ({ messages }) => {
     const [viewportHeight, setViewportHeight] = useState<number>(window.innerHeight);
-
-    const fakeDataUrl =
-        'https://randomuser.me/api/?results=20&inc=name,gender,email,nat,picture&noinfo';
-    const [data, setData] = useState<UserItem[]>([]);
 
     useEffect(() => {
         const handleResize = () => {
             setViewportHeight(window.innerHeight);
         };
+
         window.addEventListener('resize', handleResize);
-       // appendData();
         return () => {
             window.removeEventListener('resize', handleResize);
         };
@@ -25,33 +18,22 @@ const Message: FC<{messages: string[]}> = ({messages}) => {
 
     const onScroll = (e: React.UIEvent<HTMLElement, UIEvent>) => {
         if (Math.abs(e.currentTarget.scrollHeight - e.currentTarget.scrollTop - viewportHeight + 52) <= 1) {
-           // appendData();
+            // Здесь может быть логика для подгрузки новых данных, если это требуется
         }
     };
 
-    // const appendData = () => {
-    //     fetch(fakeDataUrl)
-    //         .then((res) => res.json())
-    //         .then((body) => {
-    //             setData(data.concat(body.results));
-    //             // message.success(`${body.results.length} more items loaded!`);
-    //         });
-    // };
-
     return (
-        <List style={{width: '100%'}}>
+        <List style={{ width: '100%' }}>
             <VirtualList
                 data={messages}
-                height={viewportHeight - 52}
-                itemHeight={47}
-                itemKey="email"
+                height={viewportHeight - 52} // Вычитаем высоту, если есть какие-то элементы интерфейса сверху или снизу
+                itemHeight={47} // Высота одного элемента списка
+                itemKey={(item: string) => item} // Используем сообщение как ключ
                 onScroll={onScroll}
             >
                 {(item: string) => (
                     <List.Item key={item}>
                         <List.Item.Meta
-                            // avatar={<Avatar src={item.picture.large} />}
-                            // title={<a href="https://ant.design">{item.name.last}</a>}
                             description={item}
                         />
                         <div>это я</div>
@@ -61,6 +43,5 @@ const Message: FC<{messages: string[]}> = ({messages}) => {
         </List>
     );
 }
-
 
 export default Message;
