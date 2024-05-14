@@ -3,7 +3,13 @@ import './InputForm.css';
 import { Input} from "antd";
 import {Button} from "antd";
 import Message from "./Message/Message";
+import {Message as M} from "../Type/Type";
 import {socket} from "../models/socket";
+import {$password, $user, $userInput} from "../models/init";
+import {useUnit} from "effector-react"
+
+// import {Message} from "./Type/Type";
+
 
 
 interface Message {
@@ -13,7 +19,9 @@ interface Message {
 
 
 
-const InputForm: FC<{messages: string[]}> = ({messages}) => {
+const InputForm: FC<{messages: M[]}> = ({messages}) => {
+    const [username, password] = useUnit([$userInput, $password]);
+    
     //const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState<string>('');
 
@@ -24,12 +32,13 @@ const InputForm: FC<{messages: string[]}> = ({messages}) => {
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (inputValue.trim() !== '') {
-            socket.emit('chat message', inputValue)
+            socket.emit('chat message', {"text": inputValue, "userId": username})
         }
         // if (inputValue.trim() !== '') {
         //     setMessages([...messages, {text: inputValue, sender: 'user'}]);
         //     setInputValue('');
         // }
+        setInputValue('');
     };
 
 

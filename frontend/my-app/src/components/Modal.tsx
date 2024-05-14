@@ -1,6 +1,7 @@
 import React, { FC, useState, ReactNode } from 'react';
 import {$password, $user, $userInput, buttonSubmit, passwordChange, userChange} from "../models/init";
 import {useUnit} from "effector-react"
+// import { useStore } from 'effector-react';
 
 interface ModalProps {
     isOpen: boolean;

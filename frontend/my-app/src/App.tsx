@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import './App.css';
 import InputForm from './components/InputForm';
 import {Avatar, List} from "antd";
-import {UserItem} from "./Type/Type";
+import {UserItem, Message} from "./Type/Type";
 import VirtualList from 'rc-virtual-list';
 import Modal from './components/Modal';
 import AddContactField from "./components/AddContactField";
@@ -12,7 +12,7 @@ let init = false;
 
 function App() {
 
-    const [messages, setMessages] = useState<string[]>([]);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [viewportHeight, setViewportHeight] = useState<number>(window.innerHeight);
 
     const fakeDataUrl =
@@ -30,7 +30,7 @@ function App() {
     //     };
     // }, []);
     useEffect(() => {
-        const handler = (message: string) => {
+        const handler = (message: Message) => {
             setMessages(m => [...m, message])
         }
         socket.on('chat message', handler);
