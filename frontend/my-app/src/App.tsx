@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import './App.css';
 import InputForm from './components/InputForm';
 import MessageDisplay from './components/MessageDisplay';
+import {Avatar, List} from "antd";
+import {UserItem, Message} from "./Type/Type";
+import VirtualList from 'rc-virtual-list';
+import Modal from './components/Modal';
 import AddContactField from "./components/AddContactField";
 import { Button, List, Modal } from "antd";
 
@@ -10,14 +14,20 @@ interface Contact {
     name: string;
 }
 
+
 interface MessageData {
     text: string;
     sender: string;
 }
 
+const [messages, setMessages] = useState<Message[]>([]);
+const [viewportHeight, setViewportHeight] = useState<number>(window.innerHeight);
+
+
 interface MessagesByContact {
     [contactId: string]: MessageData[];
 }
+
 
 function App() {
     const [contacts, setContacts] = useState<Contact[]>([
@@ -37,6 +47,25 @@ function App() {
         };
         setMessages(updatedMessages);
     };
+    // useEffect(() => {
+    //     const handleResize = () => {
+    //         setViewportHeight(window.innerHeight);
+    //     };
+    //     window.addEventListener('resize', handleResize);
+    //     appendData();
+    //     return () => {
+    //         window.removeEventListener('resize', handleResize);
+    //     };
+    // }, []);
+    useEffect(() => {
+        const handler = (message: Message) => {
+            setMessages(m => [...m, message])
+        }
+        socket.on('chat message', handler);
+        return () => {
+            socket.off('chat message', handler);
+        }
+    }, []);
 
     const selectContact = (contactId: string) => {
         setActiveContact(contactId);
