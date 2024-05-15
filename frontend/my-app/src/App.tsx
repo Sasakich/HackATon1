@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import InputForm from './components/InputForm';
 import MessageDisplay from './components/MessageDisplay';
-import {Avatar, List} from "antd";
 import {UserItem, Message} from "./Type/Type";
 import VirtualList from 'rc-virtual-list';
 import Modal from './components/Modal';
 import AddContactField from "./components/AddContactField";
-import { Button, List, Modal } from "antd";
+import { Button, List, Avatar } from "antd";
+import {socket} from "./models/socket";
 
 interface Contact {
     id: string;

@@ -1,7 +1,6 @@
 
 // InputForm.tsx
-import React, { useState, FormEvent } from 'react';
-import { Input, Button } from "antd";
+
 import React, {useState, FormEvent, ChangeEvent, FC} from 'react';
 import './InputForm.css';
 import { Input} from "antd";

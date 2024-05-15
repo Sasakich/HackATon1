@@ -1,7 +1,6 @@
 import { List } from "antd";
 import React, { FC, useEffect, useState } from "react";
 import VirtualList from 'rc-virtual-list';
-const Message: FC<{ messages: string[] }> = ({ messages }) => {
 import {UserItem, Message as M} from "../../Type/Type";
 import {$userInput} from "../../models/init";
 import { useStore } from 'effector-react';
