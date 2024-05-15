@@ -1,24 +1,52 @@
-import React, {useEffect, useState} from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import InputForm from './components/InputForm';
+import MessageDisplay from './components/MessageDisplay';
 import {Avatar, List} from "antd";
 import {UserItem, Message} from "./Type/Type";
 import VirtualList from 'rc-virtual-list';
 import Modal from './components/Modal';
 import AddContactField from "./components/AddContactField";
-import {io} from 'socket.io-client';
-import {socket} from "./models/socket";
-let init = false;
+import { Button, List, Modal } from "antd";
+
+interface Contact {
+    id: string;
+    name: string;
+}
+
+
+interface MessageData {
+    text: string;
+    sender: string;
+}
+
+const [messages, setMessages] = useState<Message[]>([]);
+const [viewportHeight, setViewportHeight] = useState<number>(window.innerHeight);
+
+
+interface MessagesByContact {
+    [contactId: string]: MessageData[];
+}
+
 
 function App() {
+    const [contacts, setContacts] = useState<Contact[]>([
+        { id: "1", name: "Alice" },
+        { id: "2", name: "Bob" },
+        { id: "3", name: "Charlie" }
+    ]);
+    const [activeContact, setActiveContact] = useState<string>('');
+    const [messages, setMessages] = useState<MessagesByContact>({});
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [viewportHeight, setViewportHeight] = useState<number>(window.innerHeight);
-
-    const fakeDataUrl =
-        'https://randomuser.me/api/?results=20&inc=name,gender,email,nat,picture&noinfo';
-    const [data, setData] = useState<UserItem[]>([]);
-
+    const handleSendMessage = (text: string) => {
+        const newMessage: MessageData = { text, sender: 'You' };
+        const updatedMessages = {
+            ...messages,
+            [activeContact]: [...(messages[activeContact] || []), newMessage]
+        };
+        setMessages(updatedMessages);
+    };
     // useEffect(() => {
     //     const handleResize = () => {
     //         setViewportHeight(window.innerHeight);
@@ -39,59 +67,49 @@ function App() {
         }
     }, []);
 
-    const onScroll = (e: React.UIEvent<HTMLElement, UIEvent>) => {
-        if (Math.abs(e.currentTarget.scrollHeight - e.currentTarget.scrollTop - viewportHeight + 52) <= 1) {
-            appendData();
-        }
+    const selectContact = (contactId: string) => {
+        setActiveContact(contactId);
     };
 
-    const appendData = () => {
-        fetch(fakeDataUrl)
-            .then((res) => res.json())
-            .then((body) => {
-                setData(data.concat(body.results));
-            });
+    const handleAddContact = (name: string) => {
+        const newContact = { id: `${Date.now()}`, name };
+        setContacts(prevContacts => [...prevContacts, newContact]);
+        setIsModalOpen(false); // Close the modal after adding
     };
-    const [isModalOpen, setIsModalOpen] = useState(true); // Управление видимостью модального окна
 
-    const handleClose = () => {
-        setIsModalOpen(false); // Функция для закрытия модального окна
+    const openModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
     };
 
     return (
         <div className="App">
-            {}
-
-            <List style={{width: 'auto', flexDirection: 'row', minWidth: '40%'}}>
-                <AddContactField/>
-                <VirtualList
-                    data={data}
-                    height={viewportHeight - 52}
-                    itemHeight={47}
-                    itemKey="email"
-                    onScroll={onScroll}
-                >
-                    {(item: UserItem) => (
-                        <List.Item key={item.email}>
-                            <List.Item.Meta
-                                avatar={<Avatar src={item.picture.large}/>}
-                                title={<a href="https://ant.design">{item.name.last}</a>}
-                                description={item.email}
-                            />
-                            <div>Content</div>
-                        </List.Item>
-                    )}
-                </VirtualList>
+            <Button onClick={openModal} type="primary" style={{ marginBottom: 16 }}>
+                Add New Contact
+            </Button>
+            <Modal title="Add New Contact" visible={isModalOpen} onCancel={closeModal} footer={null}>
+                <AddContactField onAddContact={handleAddContact} />
+            </Modal>
+            <List>
+                {contacts.map(contact => (
+                    <List.Item key={contact.id} onClick={() => selectContact(contact.id)}>
+                        <Button>{contact.name}</Button>
+                    </List.Item>
+                ))}
             </List>
-            <InputForm messages={messages}/>
-            <Modal isOpen={isModalOpen} onClose={handleClose}/>
-                {}
-
-            {}
+            <div className="chat-area">
+                {activeContact && (
+                    <>
+                        <MessageDisplay messages={messages[activeContact] || []} />
+                        <InputForm onSendMessage={handleSendMessage} />
+                    </>
+                )}
+            </div>
         </div>
     );
 }
 
 export default App;
-
-

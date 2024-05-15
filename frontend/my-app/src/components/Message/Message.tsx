@@ -1,6 +1,7 @@
-import {Avatar, List, message} from "antd";
-import React, {FC, useEffect, useState} from "react";
+import { List } from "antd";
+import React, { FC, useEffect, useState } from "react";
 import VirtualList from 'rc-virtual-list';
+const Message: FC<{ messages: string[] }> = ({ messages }) => {
 import {UserItem, Message as M} from "../../Type/Type";
 import {$userInput} from "../../models/init";
 import { useStore } from 'effector-react';
@@ -12,16 +13,12 @@ const Message: FC<{messages: M[]}> = ({messages}) => {
     const userInput = useStore($userInput);
     const [viewportHeight, setViewportHeight] = useState<number>(window.innerHeight);
 
-    const fakeDataUrl =
-        'https://randomuser.me/api/?results=20&inc=name,gender,email,nat,picture&noinfo';
-    const [data, setData] = useState<UserItem[]>([]);
-
     useEffect(() => {
         const handleResize = () => {
             setViewportHeight(window.innerHeight);
         };
+
         window.addEventListener('resize', handleResize);
-       // appendData();
         return () => {
             window.removeEventListener('resize', handleResize);
         };

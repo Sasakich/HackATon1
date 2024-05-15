@@ -1,37 +1,33 @@
-import React, {useState, ReactNode, ChangeEvent, FormEvent} from 'react';
-import {Button, Input} from "antd";
-import {UserAddOutlined} from "@ant-design/icons";
+// AddContactField.tsx
+import React, { useState } from 'react';
+import { Input, Button } from "antd";
 
+interface AddContactFieldProps {
+    onAddContact: (name: string) => void;
+}
 
-const AddContactField = () => {
-
+const AddContactField: React.FC<AddContactFieldProps> = ({ onAddContact }) => {
     const [inputValue, setInputValue] = useState<string>('');
 
-    const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setInputValue(event.target.value);
-    };
-
-    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
-        if (inputValue.trim() !== '') {
+        if (inputValue.trim()) {
+            onAddContact(inputValue);
             setInputValue('');
         }
     };
+
     return (
-        <form onSubmit={handleSubmit} className="chat-input-form" style={{width: '100%'}}>
+        <form onSubmit={handleSubmit}>
             <Input
                 type="text"
                 value={inputValue}
-                onChange={handleInputChange}
-                placeholder="Tyfsdyour message..."
-                className="chat-input"
+                onChange={e => setInputValue(e.target.value)}
+                placeholder="Enter contact name..."
             />
-            <Button className="send-button" style={{width: '5%', alignItems: 'center'}}>
-                <UserAddOutlined style={{fontSize: '16px'}}/>
-            </Button>
+            <Button type="primary" htmlType="submit">Add</Button>
         </form>
-
     );
-};
+}
 
 export default AddContactField;

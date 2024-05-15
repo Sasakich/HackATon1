@@ -14,6 +14,9 @@ export interface UserItem {
     };
 }
 
+export interface MessageData {
+    text: string;
+    sender: string;
 export interface Message {
     text: string;
     userId: string;
