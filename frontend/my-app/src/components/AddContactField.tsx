@@ -1,6 +1,6 @@
-// AddContactField.tsx
-import React, { useState } from 'react';
-import { Input, Button } from "antd";
+import React, { useState, ChangeEvent, FormEvent } from 'react';
+import { UserAddOutlined } from "@ant-design/icons";
+import {Button, Input} from "antd";
 
 interface AddContactFieldProps {
     onAddContact: (name: string) => void;
@@ -8,26 +8,40 @@ interface AddContactFieldProps {
 
 const AddContactField: React.FC<AddContactFieldProps> = ({ onAddContact }) => {
     const [inputValue, setInputValue] = useState<string>('');
+    const formRef = React.createRef<HTMLFormElement>();
 
-    const handleSubmit = (event: React.FormEvent) => {
-        event.preventDefault();
-        if (inputValue.trim()) {
-            onAddContact(inputValue);
-            setInputValue('');
+    const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+        setInputValue(event.target.value);
+    };
+
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+        console.log("TRYING TO ADD CONATCT")
+        event.preventDefault(); 
+        if (inputValue.trim() !== '') {
+            onAddContact(inputValue); 
+            console.log(inputValue)
+            setInputValue(''); 
         }
     };
 
+    const handleClick = () => {
+        formRef.current?.submit(); 
+    };
+
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="chat-input-form" style={{ width: '100%' }}>
             <Input
                 type="text"
                 value={inputValue}
-                onChange={e => setInputValue(e.target.value)}
-                placeholder="Enter contact name..."
+                onChange={handleInputChange}
+                placeholder="Type your contact name..."
+                className="chat-input"
             />
-            <Button type="primary" htmlType="submit">Add</Button>
+            <Button  htmlType={'submit'} className="send-button">
+                <UserAddOutlined style={{ fontSize: '16px' }} />
+            </Button>
         </form>
     );
-}
+};
 
 export default AddContactField;
