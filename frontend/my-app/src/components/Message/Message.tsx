@@ -50,6 +50,7 @@ const Message: FC<{messages: M[]}> = ({messages}) => {
                 data={messages.map(x => ({
                     text: x.text,
                     userId: x.userId,
+                    timestamp: x.timestamp,
                     isCurrentUser: x.userId === userInput
                 }))}
                 // data={messages.map(x => x['text'] + " - " + x["userId"])}
@@ -58,7 +59,7 @@ const Message: FC<{messages: M[]}> = ({messages}) => {
                 itemKey="email"
                 onScroll={onScroll}
             >
-                {(item: { text: string, userId: string, isCurrentUser: boolean }) => (
+                {(item: { text: string, userId: string, timestamp: string, isCurrentUser: boolean }) => (
                     <List.Item key={item.text}
                                style={{
                                    display: 'flex',
@@ -71,10 +72,15 @@ const Message: FC<{messages: M[]}> = ({messages}) => {
                             borderRadius: '10px',
                         }}>
                             <List.Item.Meta
-                                description={item.text}
+                                description={
+                                    <>
+                                        <div>{item.text}</div>
+                                        <div style={{ fontSize: 'small', color: 'gray' }}>
+                                            {new Date(item.timestamp).toLocaleTimeString()}
+                                        </div>
+                                    </>
+                                }
                             />
-                            <div style={{ fontStyle: 'italic', color: item.isCurrentUser ? 'green' : 'red' }}>
-                            </div>
                         </div>
                     </List.Item>
                 )}
