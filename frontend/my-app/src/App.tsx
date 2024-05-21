@@ -110,7 +110,6 @@ function App() {
                         )}
                     </VirtualList>
                 </List>
-                <InputForm messages={messages} />
                 <Modal isOpen={isModalOpen} onClose={handleClose} />
                 <VirtualList
                     data={data}
