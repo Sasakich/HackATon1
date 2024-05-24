@@ -78,7 +78,6 @@ function App() {
             <List style={{width: 'auto', flexDirection: 'row', minWidth: '40%'}}>
                 <List style={{ width: 'auto', flexDirection: 'row', minWidth: '40%' }}>
                     <AddContactField onAddContact={handleAddContact} />
-                    {/* Список для отображения контактов */}
                     <List
                         itemLayout="horizontal"
                         dataSource={contacts}

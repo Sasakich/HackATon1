@@ -16,16 +16,16 @@ const AddContactField: React.FC<AddContactFieldProps> = ({ onAddContact }) => {
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         console.log("TRYING TO ADD CONATCT")
-        event.preventDefault(); // Останавливает обновление страницы
+        event.preventDefault();
         if (inputValue.trim() !== '') {
-            onAddContact(inputValue); // Вызов функции добавления контакта
+            onAddContact(inputValue);
             console.log(inputValue)
-            setInputValue(''); // Очистка поля ввода после добавления контакта
+            setInputValue('');
         }
     };
 
     const handleClick = () => {
-        formRef.current?.submit(); // Явная отправка формы
+        formRef.current?.submit();
     };
 
     return (
