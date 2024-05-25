@@ -204,9 +204,7 @@ open({
         sockets.push(socket)
 
         socket.on('chat message', async (req, res) => {
-            
-
-            const { chatId, userId, createdAt, updatedAt, text } = req.body;//THIS
+            const { chatId, userId, createdAt, updatedAt, text } = req;//THIS
             console.log(text)
 
             try {

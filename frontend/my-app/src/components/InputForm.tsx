@@ -36,7 +36,7 @@ const InputForm: FC<{messages: M[]}> = ({messages}) => {
         event.preventDefault();
         if (inputValue.trim() !== '') {
             const timestamp = new Date().toISOString();  // Get the current time
-            socket.emit('chat message', { "text": inputValue, "userId": username, "timestamp": timestamp });
+            socket.emit('chat message', { "chatId": 1, "userId": username, "createdAt": timestamp, "updatedAt": timestamp, "text": inputValue});// chatId, userId, createdAt, updatedAt, text
         }
         // if (inputValue.trim() !== '') {
         //     setMessages([...messages, {text: inputValue, sender: 'user'}]);
