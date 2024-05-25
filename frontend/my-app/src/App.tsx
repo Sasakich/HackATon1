@@ -18,11 +18,8 @@ function App() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [viewportHeight, setViewportHeight] = useState<number>(window.innerHeight);
     const [activeContact, setActiveContact] = useState<string>('');
-    const [contacts, setContacts] = useState<Contact[]>([
-        { id: "1", name: "Alice" },
-        { id: "2", name: "Bob" },
-        { id: "3", name: "Charlie" }
-    ]);
+    const [activeDialog, setActiveDialog] = useState<{}>({});
+    const [contacts, setContacts] = useState<Contact[]>([]);
     const fakeDataUrl =
         'https://randomuser.me/api/?results=20&inc=name,gender,email,nat,picture&noinfo';
     const [data, setData] = useState<UserItem[]>([]);
@@ -60,17 +57,18 @@ function App() {
                 setData(data.concat(body.results));
             });
     };
-    const [isModalOpen, setIsModalOpen] = useState(true); // Управление видимостью модального окна
+    const [isModalOpen, setIsModalOpen] = useState(true);
 
     const handleClose = () => {
-        setIsModalOpen(false); // Функция для закрытия модального окна
+        setIsModalOpen(false);
     };
     const handleAddContact = (name: string) => {
         console.log("ADDING CONTACT")
         const newContact = { id: `${Date.now()}`, name };
         setContacts(prevContacts => [...prevContacts, newContact]);
-        setIsModalOpen(false); // Close the modal after adding
+        setIsModalOpen(false);
     };
+
     return (
         <div className="App">
             {}
@@ -78,17 +76,19 @@ function App() {
             <List style={{width: 'auto', flexDirection: 'row', minWidth: '40%'}}>
                 <List style={{ width: 'auto', flexDirection: 'row', minWidth: '40%' }}>
                     <AddContactField onAddContact={handleAddContact} />
-                    {/* Список для отображения контактов */}
                     <List
                         itemLayout="horizontal"
                         dataSource={contacts}
                         renderItem={contact => (
-                            <List.Item onClick={() => setActiveContact(contact.id)}>
-                                <List.Item.Meta
-                                    avatar={<Avatar>{contact.name.charAt(0)}</Avatar>}
-                                    title={<a href="#">{contact.name}</a>}
-                                />
-                            </List.Item>
+                            <div style={{display: 'flex', flexDirection: 'column'}}>
+                                <button onClick={() => setActiveContact(contact.id)}>
+                                    <List.Item.Meta
+                                        avatar={<Avatar>{contact.name.charAt(0)}</Avatar>}
+                                        title={contact.name}
+                                    />
+                                </button>
+                            </div>
+
                         )}
                     />
                     <VirtualList
