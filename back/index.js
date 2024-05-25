@@ -73,16 +73,50 @@ open({
         }
     });
 
-    // Route to create a new chat
-    app.post('/createChat', async (req, res) => {
-        const { name, userIds } = req.body;
-        try {
-            // Insert chat into chats table
-            const result = await db.run(
-                'INSERT INTO chats (name) VALUES (?)',
-                name
-            );
-            const chatId = result.lastID;
+
+  app.get('/getAccessToken', async function (req, res) {
+
+
+    const params = "?client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&code=" + req.query.code;
+    console.log("test1")
+    await fetch("https://github.com/login/oauth/access_token" + params, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json"
+      }
+    }).then((response) => {
+      return response.json();
+    }).then((data) => {
+      console.log(data);
+      res.json(data);
+    })
+  })
+
+  app.get('/getUserData', async function (req, res) {
+    req.get("Authorization");
+    await fetch("https://api.github.com/user", {
+      method: "GET",
+      headers: {
+        "Authorization": req.get("Authorization")
+      }
+    }).then((response) => {
+      return response.json();
+    }).then((data) => {
+      console.log(data);
+      res.json(data);
+    })
+  })
+
+  // Route to create a new chat
+  app.post('/createChat', async (req, res) => {
+    const {name, userIds} = req.body;
+    try {
+      // Insert chat into chats table
+      const result = await db.run(
+        'INSERT INTO chats (name) VALUES (?)',
+        name
+      );
+      const chatId = result.lastID;
 
             // Insert records into chatsToUsers table
             for (const userId of userIds) {
