@@ -23,8 +23,8 @@ app.use(cors());
 app.use(bodyParser.json());
 const io = require('socket.io')(server, {
     cors: {
-        origin: 'http://localhost:3000'
-        // origin: 'team4.ya-itmo.ru:3000'
+        // origin: 'http://localhost:3000'
+        origin: 'team4.ya-itmo.ru:3000'
     }
 })
 
