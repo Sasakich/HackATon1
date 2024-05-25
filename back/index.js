@@ -28,39 +28,39 @@ open({
     driver: sqlite3.Database
 }).then(async (db) => {
     console.log("Database connected");
-    
+
     app.use(express.json());
 
     app.get('/getAccessToken', async function (req, res) {
         const params = "?client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&code=" + req.query.code;
         console.log("test1")
         await fetch("https://github.com/login/oauth/access_token" + params, {
-          method: "POST",
-          headers: {
-            "Accept": "application/json"
-          }
+            method: "POST",
+            headers: {
+                "Accept": "application/json"
+            }
         }).then((response) => {
-          return response.json();
+            return response.json();
         }).then((data) => {
-          console.log(data);
-          res.json(data);
+            console.log(data);
+            res.json(data);
         })
-      })
+    })
 
-      app.get('/getUserData', async function (req, res) {
+    app.get('/getUserData', async function (req, res) {
         req.get("Authorization");
         await fetch("https://api.github.com/user", {
-          method: "GET",
-          headers: {
-            "Authorization": req.get("Authorization")
-          }
+            method: "GET",
+            headers: {
+                "Authorization": req.get("Authorization")
+            }
         }).then((response) => {
-          return response.json();
+            return response.json();
         }).then((data) => {
-          console.log(data);
-          res.json(data);
+            console.log(data);
+            res.json(data);
         })
-      })
+    })
 
     // Route to get all messages
     app.get('/getAllMessages', async (req, res) => {
@@ -203,7 +203,9 @@ open({
 
         sockets.push(socket)
 
-        socket.on('chat message', async (req, res) => {
+        socket.on('chat message', async req => {
+
+
             const { chatId, userId, createdAt, updatedAt, text } = req;//THIS
             console.log(text)
 
@@ -242,12 +244,12 @@ open({
         //         for (const socke of sockets) {//todo создать инстанс в бд, возвращать созданную строку
         //             socket.emit('update message', messag)
         //         }
-                
+
         //     } catch (error) {
         //         console.error('Error sending message:', error);
         //         res.status(500).send('Error sending message');
         //     }
-        // });        
+        // });
 
         // //todo
         // socket.on('delete message', async message => {
@@ -275,7 +277,7 @@ open({
 
 function createUser(username, password) { //todo Implement hashing of the password
     const hashedPassword = bcrypt.hashSync(password, 10); // 10 is the saltRounds
-    
+
     db.run('INSERT INTO users (username, hashed_password) VALUES (?, ?)', [username, hashedPassword], function(err) {
         if (err) {
             console.error('Error creating user:', err.message);
@@ -299,13 +301,16 @@ function verifyPassword(username, password, callback) {
 }
 async function addImageToDatabase(userId, messageId, imagePath) {
     let image = fs.readFileSync(imagePath);
-    await db.run('INSERT INTO message_images (userId, messageId, image) VALUES (?, ?, ?)', [userId, messageId, image], function(err) {
-      if (err) {
-        return console.log(err.message);
-      }
-    //   console.log(`A row has been inserted with rowid ${this.lastID}`);
-    });
-  }
+    try {
+        await db.run(
+            'INSERT INTO message_images (userId, messageId, image) VALUES (?, ?, ?)',
+            [userId, messageId, image]
+        );
+    } catch (error) {
+        console.error('Error adding chat:', error);
+        res.status(500).send('Error adding chat');
+    }
+}
 
 
 //http://localhost:3000/api/users
