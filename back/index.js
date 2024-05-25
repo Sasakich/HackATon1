@@ -18,10 +18,11 @@ server.listen(port, () => {
 app.use(cors());
 const io = require('socket.io')(server, {
     cors: {
-        // origin: 'http://localhost:3000'
-        origin: 'team4.ya-itmo.ru:3000'
+        origin: 'http://localhost:3000'
+        // origin: 'team4.ya-itmo.ru:3000'
     }
 })
+
 open({
     filename: './database/database.db',
     driver: sqlite3.Database
@@ -29,6 +30,37 @@ open({
     console.log("Database connected");
     
     app.use(express.json());
+
+    app.get('/getAccessToken', async function (req, res) {
+        const params = "?client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&code=" + req.query.code;
+        console.log("test1")
+        await fetch("https://github.com/login/oauth/access_token" + params, {
+          method: "POST",
+          headers: {
+            "Accept": "application/json"
+          }
+        }).then((response) => {
+          return response.json();
+        }).then((data) => {
+          console.log(data);
+          res.json(data);
+        })
+      })
+
+      app.get('/getUserData', async function (req, res) {
+        req.get("Authorization");
+        await fetch("https://api.github.com/user", {
+          method: "GET",
+          headers: {
+            "Authorization": req.get("Authorization")
+          }
+        }).then((response) => {
+          return response.json();
+        }).then((data) => {
+          console.log(data);
+          res.json(data);
+        })
+      })
 
     // Route to get all messages
     app.get('/getAllMessages', async (req, res) => {
@@ -171,58 +203,68 @@ open({
 
         sockets.push(socket)
 
-        socket.on('chat message', async message => {
+        socket.on('chat message', async (req, res) => {
             
-            for (const socke of sockets) {
-                socke.emit('chat message', message);
-            }
-            console.log(message)
-            // const { chatId, userId, text } = req.body;
-            // try {
-            //     const createdAt = new Date().toISOString();
-            //     const updatedAt = createdAt;
-            //     await db.run(
-            //         'INSERT INTO messages (chatId, userId, createdAt, updatedAt, message) VALUES (?, ?, ?, ?, ?)',
-            //         [chatId, userId, createdAt, updatedAt, text]
-            //     )
-            //     socket.emit('chat message', message)
-            // } catch (error) {
-            //     console.error('Error sending message:', error);
-            //     res.status(500).send('Error sending message');
-            // }
-        });
 
-        socket.on('update message', async message => {
-            const { text, messageId } = req.body;
-            try {
-                const updatedAt = new Date().toISOString();
-                await db.run(
-                    'UPDATE messages SET message = ? WHERE id = ? SET updatedAt = ?',
-                    [text, messageId, updatedAt]
-                )
-                
-                    socket.emit('chat message', message)
-                
-            } catch (error) {
-                console.error('Error sending message:', error);
-                res.status(500).send('Error sending message');
-            }
-        });        
+            const { chatId, userId, createdAt, updatedAt, text } = req.body;//THIS
+            console.log(text)
 
-        //todo
-        socket.on('delete message', async message => {
-            const { messageId } = req.body;
             try {
+                const createdAt = new Date().toISOString();
+                const updatedAt = createdAt;
                 await db.run(
-                    'DELETE FROM messages WHERE id = ?',
-                        messageId
+                    'INSERT INTO messages (chatId, userId, createdAt, updatedAt, message) VALUES (?, ?, ?, ?, ?)',
+                    [chatId, userId, createdAt, updatedAt, text]
                 )
-                // socket.emit('chat message', message)
+                const messag = await db.get(
+                    'SELECT * FROM messages WHERE chatId = ? AND userId = ? AND createdAt = ? AND updatedAt = ? AND message = ?',
+                    [chatId, userId, createdAt, updatedAt, text]
+                );
+                for (const socke of sockets) {//todo создать инстанс в бд, возвращать созданную строку
+                    socket.emit('chat message', messag)
+                }
             } catch (error) {
                 console.error('Error sending message:', error);
                 res.status(500).send('Error sending message');
             }
         });
+
+        // socket.on('update message', async message => {
+        //     const { text, messageId } = req.body;
+        //     try {
+        //         const updatedAt = new Date().toISOString();
+        //         await db.run(
+        //             'UPDATE messages SET message = ? WHERE id = ? SET updatedAt = ?',
+        //             [text, messageId, updatedAt]
+        //         )
+        //         const messag = await db.get(
+        //             'SELECT * FROM messages WHERE message = ? WHERE id = ? SET updatedAt = ?',
+        //             [text, messageId, updatedAt]
+        //         );
+        //         for (const socke of sockets) {//todo создать инстанс в бд, возвращать созданную строку
+        //             socket.emit('update message', messag)
+        //         }
+                
+        //     } catch (error) {
+        //         console.error('Error sending message:', error);
+        //         res.status(500).send('Error sending message');
+        //     }
+        // });        
+
+        // //todo
+        // socket.on('delete message', async message => {
+        //     const { messageId } = req.body;
+        //     try {
+        //         await db.run(
+        //             'DELETE FROM messages WHERE id = ?',
+        //                 messageId
+        //         )
+        //         // socket.emit('chat message', message)
+        //     } catch (error) {
+        //         console.error('Error sending message:', error);
+        //         res.status(500).send('Error sending message');
+        //     }
+        // });
 
         socket.on('disconnect', () => {
             console.log('User disconnected');
@@ -232,192 +274,40 @@ open({
 }).catch(error => {
     console.error('Error connecting to database:', error);
 });
-// io.on('connection', socket => {
-//     console.log('User connected')
 
-//     socket.on('chat message', message => {
-//         io.emit('chat message', message)
-//       })
+function createUser(username, password) { //todo Implement hashing of the password
+    const hashedPassword = bcrypt.hashSync(password, 10); // 10 is the saltRounds
+    
+    db.run('INSERT INTO users (username, hashed_password) VALUES (?, ?)', [username, hashedPassword], function(err) {
+        if (err) {
+            console.error('Error creating user:', err.message);
+        } else {
+            console.log('User created successfully');
+        }
+    });
+}
 
-//     socket.on('disconnect', () => {
-//         console.log('User disconnected')
-//     })
-// })
-
-
-
-
-
-
-// const port = 3001;
-// app.use(cors({
-//     origin: true,
-//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//     allowedHeaders: ['Content-Type', 'Authorization']
-// }));
-// app.use(express.json());
-// (async () => {
-//     const db = await open({
-//         filename: path.resolve(__dirname, './database/database.db'),
-//         driver: sqlite3.Database
-//     });
-// //users
-// //tables
-// //messages
-// // console.log(db)
-// //     app.put('/api/users/:userId/:icon/:chats', (req, res) => {
-// //         (async () => {
-// //             const userIdResult = await db.run('INSERT INTO tbl (col) VALUES (?)',
-// //                 req.params.tagId)
-// //             const iconResult = await db.run('INSERT INTO tbl (col) VALUES (?)',
-// //                 req.params.icon)
-// //             const chatsResult = await db.run('INSERT INTO tbl (col) VALUES (?)',
-// //                 req.params.chats)
-// //         })()
-// //     });
-//     app.get('/api/users', (req, res) => {
-//         (async () => {
-//             let a = await db.all('SELECT * FROM users')
-//             res.send(a)
-//         })()
-//     });
-//     app.post('/api/users', async (req, res) => {
-//         const { login, password } = req.body;
-//         console.log("got message to post");
-//         try {
-//             const user = await db.get('SELECT id FROM users WHERE login = ? AND password = ?', [login, password]);
-//             if (user) {
-//                 console.log("User exists, sending existing ID");
-//                 res.status(200).send({ lastId: user.id });
-//             } else {
-//                 const { lastID } = await db.run('INSERT INTO users (login, password) VALUES (?, ?)', [login, password]);
-//                 console.log("User created, sending new ID");
-//                 res.status(201).send({ lastId: lastID });
-//             }
-//         } catch (err) {
-//             console.error("Database error: ", err.message);
-//             res.status(500).send({ error: 'Database error', details: err.message });
-//         }
-//     });
-
-//     app.get('/api/users/:login', (req, res) => {
-//         (async () => {
-//             let userId = req.params.login
-//             let a = await db.all('SELECT * FROM users WHERE login = ?', userId)
-//             res.send(a)
-//         })()
-//     });
-
-//     app.get('/api/messages', (req, res) => {
-//         (async () => {
-//             let a = await db.all('SELECT * FROM messages')
-//             res.send(a)
-//         })()
-//     });
-//     app.get('/api/chats', (req, res) => {
-//         (async () => {
-//             let a = await db.all('SELECT * FROM chats')
-//             res.send(a)
-//         })()
-//     })
-//     app.post('/api/chats', async (req, res) => {
-//         const { user1_id, user2_id, chat_name} = req.body;
-//         try {
-//             const existingChat = await db.get(`
-//             SELECT c.id, c.name, c.icon
-//             FROM chats c
-//             JOIN chatsToUsers ctu1 ON c.id = ctu1.idChat AND ctu1.idUser = ?
-//             JOIN chatsToUsers ctu2 ON c.id = ctu2.idChat AND ctu2.idUser = ?
-//         `, [user1_id, user2_id]);
-//             if (existingChat) {
-//                 console.log("Chat already exists");
-//                 res.status(200).send({ chat: existingChat });
-//             } else {
-//                 const { lastID: newChatId } = await db.run('INSERT INTO chats (name, icon) VALUES (?, ?)', [chat_name, 'Default Icon Path']);
-//                 await db.run('INSERT INTO chatsToUsers (idChat, idUser) VALUES (?, ?)', [newChatId, user1_id]);
-//                 await db.run('INSERT INTO chatsToUsers (idChat, idUser) VALUES (?, ?)', [newChatId, user2_id]);
-//                 console.log("New chat created");
-//                 res.status(201).send({ chat: { id: newChatId, name: chat_name, icon: 'Default Icon Path' } });
-//             }
-//         } catch (err) {
-//             console.error("Database error: ", err.message);
-//             res.status(500).send({ error: 'Database error', details: err.message });
-//         }
-//     });
-
-//     app.get('/api/chats/:chatId', (req, res) => {
-//         (async () => {
-//             let a = await db.all('SELECT * FROM chats WHERE id = ?', req.params.chatId)
-//             res.send(a)
-//         })()
-//     })
-//     app.get('/api/messages/:messageId', (req, res) => {
-//         (async () => {
-//             let a = await db.all('SELECT * FROM messages WHERE id = ?', req.params.messageId)
-//             res.send(a)
-//         })()
-//     });
-//     app.post('/api/messages', async (req, res) => {
-//         const {chat_id, user_id, message, time} = req.body;
-//         try {
-//             await db.run('INSERT INTO messages (chatId, userId, createdAt, updatedAt, message) VALUES (?, ?, ?, ?, ?)', [chat_id, user_id,time, Date.now(), message]);
-//             res.status(200).send({message: message})
-//         } catch (err) {
-//             console.error("Database error: ", err.message);
-//             res.status(500).send({ error: 'Database error', details: err.message });
-//         }
-//     });
-//     app.post('/api/messages/send', async (req, res) => {
-//         const {chat_id} = req.body;
-//         try {
-//             let messages = await db.all('SELECT * FROM messages WHERE chatId = ?', chat_id);
-//             res.status(200).send({messages: messages})
-//         } catch (err) {
-//             console.error("Database error: ", err.message);
-//             res.status(500).send({ error: 'Database error', details: err.message });
-//         }
-//     });
-//     // app.put('/api/chats/:chatId', (req, res) => {
-//     //     (async () => {
-//     //         const chatIdResult = await db.run('INSERT INTO tbl (col) VALUES (?)',
-//     //             req.params.chatId)
-//     //     })()
-//     // });
-//     // app.put('/api/messages/:messageId/:chatId/:userId/:createdAt/:updatedAt', (req, res) => {
-//     //     (async () => {
-//     //         const messageIdResult = await db.run('INSERT INTO tbl (col) VALUES (?)',
-//     //             req.params.messageId)
-//     //         const chatIdResult = await db.run('INSERT INTO tbl (col) VALUES (?)',
-//     //             req.params.chatId)
-//     //         const created_at_result = await db.run('INSERT INTO tbl (col) VALUES (?)',
-//     //             req.params.createdAt)
-//     //         const updated_at_result = await db.run('INSERT INTO tbl (col) VALUES (?)',
-//     //             req.params.updatedAt)
-//     //     })()
-//     // });
-
-
-//     app.get('/api/users', (req, res) => {
-//         res.send('Hello World!')
-//     });
-//     app.get('/messages', (req, res) => {
-//         res.send('Hello')
-//         console.log('World')
-//     });
-//     // app.get('/addNewMessages/:tagId', (req, res) => {
-//     //     data.push(req.params.tagId);
-//     //     res.send(true)
-//     //     console.log(data)
-//     // });
-//     // app.get('/messages/:tagId', function (req, res) {
-//     //     res.send("tagId is set to " + req.params.tagId);
-//     //     console.log(data[req.params.tagId])
-//     // });
-//     app.listen(port, () => {
-//         console.log(`Example app listening on port ${port}`)
-//     });
-// })();
-
+function verifyPassword(username, password, callback) {
+    db.get('SELECT hashed_password FROM users WHERE username = ?', [username], function(err, row) {
+        if (err) {
+            callback(err);
+        } else if (!row) {
+            callback(null, false); // User not found
+        } else {
+            const hashedPassword = row.hashed_password;
+            callback(null, bcrypt.compareSync(password, hashedPassword));
+        }
+    });
+}
+async function addImageToDatabase(userId, messageId, imagePath) {
+    let image = fs.readFileSync(imagePath);
+    await db.run('INSERT INTO message_images (userId, messageId, image) VALUES (?, ?, ?)', [userId, messageId, image], function(err) {
+      if (err) {
+        return console.log(err.message);
+      }
+    //   console.log(`A row has been inserted with rowid ${this.lastID}`);
+    });
+  }
 
 
 //http://localhost:3000/api/users
