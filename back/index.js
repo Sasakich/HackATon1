@@ -271,15 +271,35 @@ open({
         });
     });
 
-    app.post('./addImageToDatabase', async (userId, messageId, imagePath) => {
+    app.post('./addImageToDatabase', async (chatId, userId, createdAt, updatedAt, messageId, imagePath, name, text) => {
         let image = fs.readFileSync(imagePath);
         try {
             await db.run(
-                'INSERT INTO message_images (userId, messageId, image) VALUES (?, ?, ?)',
-                [userId, messageId, image]
+                'INSERT INTO messages (chatId, userId, createdAt, updatedAt, text) VALUES (?, ?)',
+                [chatId, userId, createdAt, updatedAt, text]
             );
+            await db.run(
+                'INSERT INTO message_images (messageId, imageId) VALUES (?, ?)',
+                [messageId, image]
+            );
+            await db.run(
+                'INSERT INTO images (imageName, imageData) VALUES (?, ?)',
+                [name, image]
+            );
+            
         } catch (error) {
             console.error('Error posting image:', error);
+        }
+    });
+
+    app.get('./getImageByMessage', async (req, res) => {
+        const {messageId} = req.body;
+        try {
+            const images = await db.all(
+                'SELECT * FROM message_images WHERE messageID = ?',
+                messageId
+            );
+            res.json(images)
         }
     });
 
