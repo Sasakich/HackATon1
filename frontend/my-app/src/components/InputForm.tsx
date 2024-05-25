@@ -86,7 +86,7 @@ const InputForm: FC<{messages: M[]}> = ({messages}) => {
                     </Button>
                     {showEmojiPicker && (
                         <div className="emoji-picker-container">
-                            <EmojiPicker onEmojiClick={handleEmojiClick} />
+                          <EmojiPicker onEmojiClick={handleEmojiClick} />
                         </div>
                     )}
                 </div>
