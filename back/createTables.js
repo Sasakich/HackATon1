@@ -1,7 +1,7 @@
 // import sqlite from 'sqlite'
 // import { open } from 'sqlite'
 const sqlite3 = require("sqlite3");
-const {open} = require("sqlite");
+const { open } = require("sqlite");
 
 (async () => {
   const db = await open({
@@ -46,10 +46,57 @@ const {open} = require("sqlite");
   CREATE TABLE IF NOT EXISTS chatsToUsers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     idChat int NOT NULL,
-    idUser int NOT NULL                                      
+    idUser int NOT NULL,
+    FOREIGN KEY (idChat) REFERENCES chats(id),
+    FOREIGN KEY (idUser) REFERENCES users(id)                                      
     )
   `)
   await db.exec('INSERT INTO chatsToUsers VALUES (null, 0, 0)')
   a = await db.all('SELECT * FROM chatsToUsers');
   console.log(a);
+  // await db.exec(`
+  // CREATE TABLE IF NOT EXISTS images (
+  //   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  //   imageName VARCHAR(255) NOT NULL,
+  //   imageData BLOB NOT NULL
+  // )
+  // `)
+  // await db.exec('INSERT INTO images VALUES (null, 0, 0)')
+  // a = await db.all('SELECT * FROM images');
+  // console.log(a);
+  await db.exec(`
+  CREATE TABLE IF NOT EXISTS message_images (
+    messageId INTEGER,
+    imageId INTEGER,
+    FOREIGN KEY (messageId) REFERENCES messages(id),
+    FOREIGN KEY (imageId) REFERENCES images(id)
+)`)
+  await db.exec('INSERT INTO message_images VALUES (1, 1)')
+  a = await db.all('SELECT * FROM message_images');
+  console.log(a);
+  await db.exec(`
+  CREATE TABLE IF NOT EXISTS contacts (
+    userId INTEGER NOT NULL,
+    contactUserId INTEGER NOT NULL,
+    image BLOB NOT NULL,
+    FOREIGN KEY (userId) REFERENCES users(id),
+    FOREIGN KEY (contactUserId) REFERENCES users(id)
+)`)
+  await db.exec('INSERT INTO contacts VALUES (1, 2)')
+  await db.exec('INSERT INTO contacts VALUES (2, 1)')
+  await db.exec('INSERT INTO contacts VALUES (1, 3)')
+  a = await db.all('SELECT * FROM contacts');
+  console.log(a);
+  await db.exec(`
+  CREATE TABLE IF NOT EXISTS message_reactions (
+    messageId INTEGER NOT NULL,
+    reactorUserId INTEGER NOT NULL,
+    reactionType varchar(255) NOT NULL,
+    FOREIGN KEY (messageId) REFERENCES messages(id),
+    FOREIGN KEY (reactorUserId) REFERENCES users(id)
+  )`)
+  await db.exec('INSERT INTO message_reactions VALUES (1, 1, "💀")')
+  a = await db.all('SELECT * FROM message_reactions');
+  console.log(a);
+
 })()
