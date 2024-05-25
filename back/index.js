@@ -1,7 +1,11 @@
 // const http = require('http');
 // const hostname = '127.0.0.1';
+const cookieParser = require("cookie-parser");
+const passport = require('passport');
+const expressSession = require('express-session');
+const { myPassport } = require('./auth');
 const sqlite3 = require("sqlite3");
-const {open} = require("sqlite");
+const { open } = require("sqlite");
 const cors = require('cors');
 // const path = require('path')
 const express = require('express')
@@ -10,7 +14,7 @@ const express = require('express')
 // const { Socket } = require('dgram');
 const CLIENT_ID = "2897c730c31dd10adb98";
 const CLIENT_SECRET = "5e58f80274b20bc1fe8cf264011d230290c4c72e";
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 let bodyParser = require('body-parser');
 const app = express();
 const server = require('http').Server(app);
@@ -28,6 +32,13 @@ const io = require('socket.io')(server, {
     }
 })
 
+app.use(cookieParser());
+app.use(expressSession({
+    secret: '1234567890', name: 'sessionId', resave: false, saveUninitialized: false,
+}));
+app.use(myPassport.initialize());
+app.use(myPassport.session());
+
 open({
     filename: './database/database.db',
     driver: sqlite3.Database
@@ -35,6 +46,16 @@ open({
     console.log("Database connected");
 
     app.use(express.json());
+
+    app.get('/auth/github', passport.authenticate('github'));
+
+    app.get('/auth/github/callback',
+        passport.authenticate('github', { failureRedirect: 'http://localhost:3000' }),
+        (req, res) => {
+            console.log('passport auth callback fired');
+            res.redirect('http://localhost:3000')
+        }
+    );
 
     app.get('/getAccessToken', async function (req, res) {
         const params = "?client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&code=" + req.query.code;
