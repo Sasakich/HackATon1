@@ -50,7 +50,7 @@ const Message: FC<{messages: M[]}> = ({messages}) => {
                 data={messages.map(x => ({
                     text: x.text,
                     userId: x.userId,
-                    timestamp: x.timestamp,
+                    timestamp: x.createdAt,
                     isCurrentUser: x.userId === userInput
                 }))}
                 // data={messages.map(x => x['text'] + " - " + x["userId"])}
