@@ -308,11 +308,13 @@ open({
 }).catch(error => {
     console.error('Error connecting to database:', error);
 });
+require('./generateIcon.js');
+  
 
 function createUser(username, password) { //todo Implement hashing of the password
     const hashedPassword = bcrypt.hashSync(password, 10); // 10 is the saltRounds
 
-    db.run('INSERT INTO users (username, hashed_password) VALUES (?, ?)', [username, hashedPassword], function(err) {
+    db.run('INSERT INTO users (login, password, icon) VALUES (?, ?, ?)', [username, hashedPassword, getIcon], function(err) {
         if (err) {
             console.error('Error creating user:', err.message);
         } else {
@@ -342,7 +344,6 @@ async function addImageToDatabase(userId, messageId, imagePath) {
         );
     } catch (error) {
         console.error('Error adding chat:', error);
-        res.status(500).send('Error adding chat');
     }
 }
 

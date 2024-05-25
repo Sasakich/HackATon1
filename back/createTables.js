@@ -78,13 +78,13 @@ const { open } = require("sqlite");
   CREATE TABLE IF NOT EXISTS contacts (
     userId INTEGER NOT NULL,
     contactUserId INTEGER NOT NULL,
-    image BLOB NOT NULL,
+    image BLOB,
     FOREIGN KEY (userId) REFERENCES users(id),
     FOREIGN KEY (contactUserId) REFERENCES users(id)
 )`)
-  await db.exec('INSERT INTO contacts VALUES (1, 2)')
-  await db.exec('INSERT INTO contacts VALUES (2, 1)')
-  await db.exec('INSERT INTO contacts VALUES (1, 3)')
+  await db.exec('INSERT INTO contacts VALUES (1, 1, 1)')
+  // await db.exec('INSERT INTO contacts VALUES (2, 1)')
+  // await db.exec('INSERT INTO contacts VALUES (1, 3)')
   a = await db.all('SELECT * FROM contacts');
   console.log(a);
   await db.exec(`
