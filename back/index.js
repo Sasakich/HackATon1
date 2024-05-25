@@ -8,6 +8,10 @@ const express = require('express')
 // const bodyParser = require('body-parser');
 // const { Server } = require("socket.io");
 // const { Socket } = require('dgram');
+const CLIENT_ID = "2897c730c31dd10adb98";
+const CLIENT_SECRET = "5e58f80274b20bc1fe8cf264011d230290c4c72e";
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+let bodyParser = require('body-parser');
 const app = express();
 const server = require('http').Server(app);
 const port = process.env.PORT || 3001;
@@ -16,6 +20,7 @@ server.listen(port, () => {
     console.log("Connected")
 })
 app.use(cors());
+app.use(bodyParser.json());
 const io = require('socket.io')(server, {
     cors: {
         origin: 'http://localhost:3000'
