@@ -71,16 +71,16 @@ const { open } = require("sqlite");
   const zero = 0;
   // a = await db.all('SELECT * FROM usersToChats WHERE idUser = ?', [zero]);
   // console.log(a);
-  // await db.exec(`
-  // CREATE TABLE IF NOT EXISTS images (
-  //   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  //   imageName VARCHAR(255) NOT NULL,
-  //   imageData BLOB NOT NULL
-  // )
-  // `)
-  // await db.exec('INSERT INTO images VALUES (null, 0, 0)')
-  // a = await db.all('SELECT * FROM images');
-  // console.log(a);
+  await db.exec(`
+  CREATE TABLE IF NOT EXISTS images (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    imageName VARCHAR(255) NOT NULL,
+    imageData BLOB NOT NULL
+  )
+  `)
+  await db.exec('INSERT INTO images VALUES (null, 0, 0)')
+  a = await db.all('SELECT * FROM images');
+  console.log(a);
   await db.exec(`
   CREATE TABLE IF NOT EXISTS message_images (
     messageId INTEGER,
