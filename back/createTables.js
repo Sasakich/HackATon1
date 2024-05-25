@@ -54,6 +54,23 @@ const { open } = require("sqlite");
   await db.exec('INSERT INTO chatsToUsers VALUES (null, 0, 0)')
   a = await db.all('SELECT * FROM chatsToUsers');
   console.log(a);
+  await db.exec(`
+  CREATE TABLE IF NOT EXISTS usersToChats (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    idUser int NOT NULL,
+    idChat int NOT NULL,
+    FOREIGN KEY (idChat) REFERENCES chats(id),
+    FOREIGN KEY (idUser) REFERENCES users(id)                                      
+    )
+  `)
+  await db.exec('INSERT INTO usersToChats VALUES (null, 1, 2)')
+  await db.exec('INSERT INTO usersToChats VALUES (null, 1, 3)')
+  await db.exec('INSERT INTO usersToChats VALUES (null, 0, 3)')
+  a = await db.all('SELECT * FROM usersToChats');
+  console.log(a);
+  const zero = 0;
+  // a = await db.all('SELECT * FROM usersToChats WHERE idUser = ?', [zero]);
+  // console.log(a);
   // await db.exec(`
   // CREATE TABLE IF NOT EXISTS images (
   //   id INTEGER PRIMARY KEY AUTOINCREMENT,

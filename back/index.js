@@ -112,16 +112,37 @@ open({
     })
   })
 
+  function intersection(arr1, arr2) {
+    const set2 = new Set(arr2);
+    return arr1.filter(value => set2.has(value));
+  }
+
   // Route to create a new chat
   app.post('/createChat', async (req, res) => {
     const {name, userIds} = req.body;
     try {
-      // Insert chat into chats table
-      const result = await db.run(
-        'INSERT INTO chats (name) VALUES (?)',
-        name
-      );
-      const chatId = result.lastID;
+        var arr = [];
+        for (const userId of userIds) {
+            const chats = await db.all(
+                `SELECT * FROM usersToChats WHERE idUser = ?`,
+                userId
+            );
+            var tmp = [];
+            for (const chat of chats) {
+                tmp.push(chat.idChat);
+            }
+            arr.push(tmp);
+        }
+        // console.log(intersection(...arr))
+        if (intersection(...arr) != []) {
+            res.status(201).send('Chat already exists');
+        } else {
+        // Insert chat into chats table
+        const result = await db.run(
+            'INSERT INTO chats (name) VALUES (?)',
+            name
+        );
+        const chatId = result.lastID;
 
             // Insert records into chatsToUsers table
             for (const userId of userIds) {
@@ -130,13 +151,14 @@ open({
                     [chatId, userId]
                 );
             }
+            
 
             res.status(201).send('Chat created successfully');
-        } catch (error) {
+        }
+    } catch (error) {
             console.error('Error creating chat:', error);
             res.status(500).send('Error creating chat');
-        }
-    });
+    }});
 
     // Route to get user by login and password
     app.get('/getUser', async (req, res) => {
@@ -161,6 +183,21 @@ open({
     app.get('/getChats', async (req, res) => {
         try {
             const chats = await db.all('SELECT * FROM chats');
+            res.json(chats);
+        } catch (error) {
+            console.error('Error fetching chats:', error);
+            res.status(500).send('Error fetching chats');
+        }
+    });
+
+     
+
+     // Route to get all chats
+     app.get('/getChat/:chatId', async (req, res) => {
+        try {
+            const chats = await db.all('SELECT FROM chats WHERE chatId = ?',
+                chatId
+            );
             res.json(chats);
         } catch (error) {
             console.error('Error fetching chats:', error);
@@ -223,19 +260,19 @@ open({
         }
     });
 
-    // Route to add a new chat
-    app.post('/addChat', async (req, res) => {
-        const { name, icon } = req.body;
-        try {
-            await db.run(
-                'INSERT INTO chats (name, icon) VALUES (?, ?)',
-                [name, icon]
-            );
-        } catch (error) {
-            console.error('Error adding chat:', error);
-            res.status(500).send('Error adding chat');
-        }
-    });
+    // // Route to add a new chat
+    // app.post('/addChat', async (req, res) => {
+    //     const { name, icon } = req.body;
+    //     try {
+    //         await db.run(
+    //             'INSERT INTO chats (name, icon) VALUES (?, ?)',
+    //             [name, icon]
+    //         );
+    //     } catch (error) {
+    //         console.error('Error adding chat:', error);
+    //         res.status(500).send('Error adding chat');
+    //     }
+    // });
 
     io.on('connection', socket => {
         console.log('User connected');
