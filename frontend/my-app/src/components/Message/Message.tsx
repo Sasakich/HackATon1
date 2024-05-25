@@ -48,7 +48,7 @@ const Message: FC<{messages: M[]}> = ({messages}) => {
         <div style={{ width: '100%', listStyleType: 'none'}}>
             <VirtualList
                 data={messages.map(x => ({
-                    text: x.text,
+                    text: x.message,
                     userId: x.userId,
                     timestamp: x.createdAt,
                     isCurrentUser: x.userId === userInput
