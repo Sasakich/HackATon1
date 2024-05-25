@@ -151,7 +151,7 @@ open({
                     [chatId, userId]
                 );
             }
-            
+
 
             res.status(201).send('Chat created successfully');
         }
@@ -246,19 +246,56 @@ open({
         }
     });
 
-    // Route to add a new user
-    app.post('/addUser', async (req, res) => {
-        const { login, password, icon } = req.body;
+    app.post('./createUser', async (username, password) => { //todo Implement hashing of the password
+        const hashedPassword = bcrypt.hashSync(password, 10); // 10 is the saltRounds
+    
+        db.run('INSERT INTO users (login, password, icon) VALUES (?, ?, ?)', [username, hashedPassword, getIcon], function(err) {
+            if (err) {
+                console.error('Error creating user:', err.message);
+            } else {
+                console.log('User created successfully');
+            }
+        });
+    });
+
+    app.get('./verifyPassword', async (username, password, callback) =>{
+        db.get('SELECT hashed_password FROM users WHERE username = ?', [username], function(err, row) {
+            if (err) {
+                callback(err);
+            } else if (!row) {
+                callback(null, false); // User not found
+            } else {
+                const hashedPassword = row.hashed_password;
+                callback(null, bcrypt.compareSync(password, hashedPassword));
+            }
+        });
+    });
+
+    app.post('./addImageToDatabase', async (userId, messageId, imagePath) => {
+        let image = fs.readFileSync(imagePath);
         try {
             await db.run(
-                'INSERT INTO users (login, password, icon) VALUES (?, ?, ?)',
-                [login, password, icon]
+                'INSERT INTO message_images (userId, messageId, image) VALUES (?, ?, ?)',
+                [userId, messageId, image]
             );
         } catch (error) {
-            console.error('Error adding user:', error);
-            res.status(500).send('Error adding user');
+            console.error('Error posting image:', error);
         }
     });
+
+    // // Route to add a new user
+    // app.post('/addUser', async (req, res) => {
+    //     const { login, password, icon } = req.body;
+    //     try {
+    //         await db.run(
+    //             'INSERT INTO users (login, password, icon) VALUES (?, ?, ?)',
+    //             [login, password, icon]
+    //         );
+    //     } catch (error) {
+    //         console.error('Error adding user:', error);
+    //         res.status(500).send('Error adding user');
+    //     }
+    // });
 
     // // Route to add a new chat
     // app.post('/addChat', async (req, res) => {
@@ -353,41 +390,41 @@ open({
 require('./generateIcon.js');
   
 
-function createUser(username, password) { //todo Implement hashing of the password
-    const hashedPassword = bcrypt.hashSync(password, 10); // 10 is the saltRounds
+// function createUser(username, password) { //todo Implement hashing of the password
+//     const hashedPassword = bcrypt.hashSync(password, 10); // 10 is the saltRounds
 
-    db.run('INSERT INTO users (login, password, icon) VALUES (?, ?, ?)', [username, hashedPassword, getIcon], function(err) {
-        if (err) {
-            console.error('Error creating user:', err.message);
-        } else {
-            console.log('User created successfully');
-        }
-    });
-}
+//     db.run('INSERT INTO users (login, password, icon) VALUES (?, ?, ?)', [username, hashedPassword, getIcon], function(err) {
+//         if (err) {
+//             console.error('Error creating user:', err.message);
+//         } else {
+//             console.log('User created successfully');
+//         }
+//     });
+// }
 
-function verifyPassword(username, password, callback) {
-    db.get('SELECT hashed_password FROM users WHERE username = ?', [username], function(err, row) {
-        if (err) {
-            callback(err);
-        } else if (!row) {
-            callback(null, false); // User not found
-        } else {
-            const hashedPassword = row.hashed_password;
-            callback(null, bcrypt.compareSync(password, hashedPassword));
-        }
-    });
-}
-async function addImageToDatabase(userId, messageId, imagePath) {
-    let image = fs.readFileSync(imagePath);
-    try {
-        await db.run(
-            'INSERT INTO message_images (userId, messageId, image) VALUES (?, ?, ?)',
-            [userId, messageId, image]
-        );
-    } catch (error) {
-        console.error('Error adding chat:', error);
-    }
-}
+// function verifyPassword(username, password, callback) {
+//     db.get('SELECT hashed_password FROM users WHERE username = ?', [username], function(err, row) {
+//         if (err) {
+//             callback(err);
+//         } else if (!row) {
+//             callback(null, false); // User not found
+//         } else {
+//             const hashedPassword = row.hashed_password;
+//             callback(null, bcrypt.compareSync(password, hashedPassword));
+//         }
+//     });
+// }
+// async function addImageToDatabase(userId, messageId, imagePath) {
+//     let image = fs.readFileSync(imagePath);
+//     try {
+//         await db.run(
+//             'INSERT INTO message_images (userId, messageId, image) VALUES (?, ?, ?)',
+//             [userId, messageId, image]
+//         );
+//     } catch (error) {
+//         console.error('Error adding chat:', error);
+//     }
+// }
 
 
 //http://localhost:3000/api/users
