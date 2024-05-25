@@ -7,7 +7,7 @@ import {Message as M} from "../Type/Type";
 import {socket} from "../models/socket";
 import {$password, $user, $userInput} from "../models/init";
 import {useUnit} from "effector-react";
-import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+//import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 
 // import {Message} from "./Type/Type";
 
@@ -49,10 +49,10 @@ const InputForm: FC<{messages: M[]}> = ({messages}) => {
         setShowEmojiPicker((prevState) => !prevState);
     };
 
-    const handleEmojiClick = (emojiData: EmojiClickData) => {
-        setInputValue((prevValue) => prevValue + emojiData.emoji);
-        setShowEmojiPicker(false);
-    };
+    // const handleEmojiClick = (emojiData: EmojiClickData) => {
+    //     setInputValue((prevValue) => prevValue + emojiData.emoji);
+    //     setShowEmojiPicker(false);
+    // };
 
     const handleMouseEnter = () => {
         setShowEmojiPicker(true);
@@ -86,7 +86,7 @@ const InputForm: FC<{messages: M[]}> = ({messages}) => {
                     </Button>
                     {showEmojiPicker && (
                         <div className="emoji-picker-container">
-                            <EmojiPicker onEmojiClick={handleEmojiClick} />
+                         {/* <EmojiPicker onEmojiClick={handleEmojiClick} />*/}
                         </div>
                     )}
                 </div>

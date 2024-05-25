@@ -13,6 +13,10 @@ interface Contact {
     id: string;
     name: string;
 }
+
+function isAuth() {
+  return Boolean(localStorage.getItem("accessToken"))
+}
 function App() {
 
     const [messages, setMessages] = useState<Message[]>([]);
@@ -53,6 +57,7 @@ function App() {
         }
     };
 
+
     const appendData = () => {
         fetch(fakeDataUrl)
             .then((res) => res.json())
@@ -60,7 +65,7 @@ function App() {
                 setData(data.concat(body.results));
             });
     };
-    const [isModalOpen, setIsModalOpen] = useState(true); // Управление видимостью модального окна
+    const [isModalOpen, setIsModalOpen] = useState(!isAuth()); // Управление видимостью модального окна
 
     const handleClose = () => {
         setIsModalOpen(false); // Функция для закрытия модального окна
