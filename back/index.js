@@ -259,8 +259,8 @@ open({
                     'SELECT * FROM messages WHERE chatId = ? AND userId = ? AND createdAt = ? AND updatedAt = ? AND message = ?',
                     [chatId, userId, createdAt, updatedAt, text]
                 );
-                for (const socke of sockets) {//todo создать инстанс в бд, возвращать созданную строку
-                    socket.emit('chat message', messag)
+                for (const socke of sockets) {
+                    socke.emit('chat message', messag)
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
