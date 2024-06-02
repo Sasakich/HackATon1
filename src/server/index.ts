@@ -41,7 +41,7 @@ const createApp = async () => {
     app.use('/api/me',  async (_req: Request, res: Response) => {
         // const name = names[new Date().getDay()];
         console.log("adasdasdasd")
-        await db.exec('INSERT INTO chats VALUES (null, "test2", "test2")')
+        await db.exec('INSERT INTO users VALUES (null, "test2", "test2", "test2")')
         // res.json({user});
     });
     // open({
