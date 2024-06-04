@@ -45,11 +45,10 @@ const createApp = async () => {
     app.use('/api/me',  async (_req: Request, res: Response) => {
         // const name = names[new Date().getDay()];
         const { login, password } = _req.query;
-        const icon = getIcon;
         console.log("adasdasdasd")
         await db.all(
             'INSERT INTO users VALUES WHERE null, login = ?, password = ?, icon = ?',
-            login, password, 
+            login, password, getIcon
         )
         // res.json({user});
     });
