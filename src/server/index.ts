@@ -6,8 +6,9 @@ import {Server} from 'socket.io';
 import http from 'http';
 import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
-import {userRoute} from "./controllers/user";
+// import {userRoute} from "./controllers/user";
 // require('./generateIcon.js');
+const getIcon: any = require('./generateIcon.js').getIcon;
 
 const CLIENT_ID = "2897c730c31dd10adb98";
 const CLIENT_SECRET = "5e58f80274b20bc1fe8cf264011d230290c4c72e";
@@ -41,10 +42,15 @@ const createApp = async () => {
         driver: sqlite3.Database
     });
     withApiRoutes(app);
-    app.use('/api/me',  async (_req: Request, res: Response) => { //todo THIS IS A TEST SHIT
+    app.use('/api/me',  async (_req: Request, res: Response) => {
         // const name = names[new Date().getDay()];
+        const { login, password } = _req.query;
+        const icon = getIcon;
         console.log("adasdasdasd")
-        await db.exec('INSERT INTO users VALUES (null, "test2", "test2", "test2")')
+        await db.all(
+            'INSERT INTO users VALUES WHERE null, login = ?, password = ?, icon = ?',
+            login, password, 
+        )
         // res.json({user});
     });
     app.get('/getAccessToken', async function (req, res) {
@@ -89,6 +95,20 @@ const createApp = async () => {
         }
     });
 
+    // Route to get all messages from one chat
+    app.get('/getChatMessages', async (req, res) => {
+        const { chatId } = req.query;
+        try {
+            const messages = await db.all(
+                'SELECT * FROM messages WHERE chatId = ?',
+                chatId
+            );
+            res.json(messages);
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+            res.status(500).send('Error fetching messages');
+        }
+    });
 
   app.get('/getAccessToken', async function (req, res) {
     const params = "?client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&code=" + req.query.code;
