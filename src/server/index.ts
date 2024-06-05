@@ -8,7 +8,7 @@ import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 // import {userRoute} from "./controllers/user";
 // require('./generateIcon.js');
-const getIcon: any = require('./generateIcon.js').getIcon;
+// const getIcon: any = require('./generateIcon.js').getIcon;
 
 const CLIENT_ID = "2897c730c31dd10adb98";
 const CLIENT_SECRET = "5e58f80274b20bc1fe8cf264011d230290c4c72e";
@@ -47,8 +47,9 @@ const createApp = async () => {
         const { login, password } = _req.query;
         console.log("adasdasdasd")
         await db.all(
-            'INSERT INTO users VALUES WHERE null, login = ?, password = ?, icon = ?',
-            login, password, getIcon
+            'INSERT INTO users (id, login, password, icon) VALUES (?,?,?,?)',
+            // [null, login, password, "test2"] todo нужно передавать
+            [null, "test2", "test2", "test2"]
         )
         // res.json({user});
     });
