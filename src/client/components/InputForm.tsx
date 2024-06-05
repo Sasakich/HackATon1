@@ -69,7 +69,7 @@ const InputForm: FC<{messages: M[]}> = ({messages}) => {
 
             <Message messages={messages}/>
             <form onSubmit={handleSubmit} className="chat-input-form" >
-                <div className="input-with-emoji" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+                <div className="input-with-emoji" >
                     <Input
                         type="text"
                         value={inputValue}
@@ -81,12 +81,13 @@ const InputForm: FC<{messages: M[]}> = ({messages}) => {
                         type="default"
                         onClick={handleEmojiButtonClick}
                         className="emoji-button"
+
                     >
                         😀
                     </Button>
                     {showEmojiPicker && (
-                        <div className="emoji-picker-container">
-                          <EmojiPicker onEmojiClick={handleEmojiClick} />
+                        <div className="emoji-picker-container" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+                          <EmojiPicker  onEmojiClick={handleEmojiClick} />
                         </div>
                     )}
                 </div>
