@@ -1,25 +1,28 @@
-import React, {useState, FormEvent, ChangeEvent, FC, useEffect} from 'react';
+import React, { useState, FormEvent, ChangeEvent, FC, useEffect } from 'react';
 import './InputForm.css';
-import { Input} from "antd";
-import {Button} from "antd";
+import { Input, Modal } from "antd";
+import { Button } from "antd";
 import Message from "./Message/Message";
-import {Message as M, SmallContact} from "../Type/Type";
-import {socket} from "../models/socket";
-import {$password, $user, $userInput, currentChatUserStore} from "../models/init";
-import {useUnit} from "effector-react";
+import { Message as M, SmallContact } from "../Type/Type";
+import { socket } from "../models/socket";
+import { $password, $userInput, currentChatUserStore } from "../models/init";
+import { useUnit } from "effector-react";
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
-import { useStore } from 'effector-react';
-import {Store} from "effector";
-// import {Message} from "./Type/Type";
+import { Store } from "effector";
 
-
+// Типы сообщений и пользователя
+type ChatUser = {
+    login: string;
+};
 
 interface Message {
     text: string;
     sender: string;
     timestamp: string;
 }
-function useInit<T>(store : Store<T>) {
+
+// Кастомный хук для подписки на стор и обновления компонента
+function useInit<T>(store: Store<T>): T {
     const [state, setState] = useState(store.getState());
     useEffect(() => {
         const unsubscribe = store.watch(setState);
@@ -31,14 +34,13 @@ function useInit<T>(store : Store<T>) {
     return state;
 }
 
-
-const InputForm: FC<{messages: M[]}> = ({messages}) => {
+const InputForm: FC<{ messages: M[] }> = ({ messages }) => {
     const currentChatUser = useInit(currentChatUserStore);
     const [username, password] = useUnit([$userInput, $password]);
-    const [activeChatUser, setActiveChatUser] = useState<SmallContact>({login: 'start chatting'})
-    //const [messages, setMessages] = useState<Message[]>([]);
+    const [activeChatUser, setActiveChatUser] = useState<SmallContact>({ login: 'start chatting' });
     const [inputValue, setInputValue] = useState<string>('');
     const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
+    const [modalIsOpen, setModalIsOpen] = useState(false);
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
         setInputValue(event.target.value);
@@ -47,13 +49,9 @@ const InputForm: FC<{messages: M[]}> = ({messages}) => {
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (inputValue.trim() !== '') {
-            const timestamp = new Date().toISOString();  // Get the current time
-            socket.emit('chat message', { "chatId": 1, "userId": username, "createdAt": timestamp, "updatedAt": timestamp, "text": inputValue, name: "", image: ""});// chatId, userId, createdAt, updatedAt, text
+            const timestamp = new Date().toISOString();
+            socket.emit('chat message', { "chatId": 1, "userId": username, "createdAt": timestamp, "updatedAt": timestamp, "text": inputValue, name: "", image: "" });
         }
-        // if (inputValue.trim() !== '') {
-        //     setMessages([...messages, {text: inputValue, sender: 'user'}]);
-        //     setInputValue('');
-        // }
         setInputValue('');
     };
 
@@ -74,14 +72,21 @@ const InputForm: FC<{messages: M[]}> = ({messages}) => {
         setShowEmojiPicker(false);
     };
 
+    const openModal = () => {
+        setModalIsOpen(true);
+    };
 
+    const closeModal = () => {
+        setModalIsOpen(false);
+    };
 
     return (
         <div className="chat-container">
-            <button className={'small-contact'}>
-                {currentChatUser.login}
+            <button className='small-contact' onClick={openModal}>
+                {currentChatUser?.login ?? 'No User'}
             </button>
-            <Message messages={messages}/>
+
+            <Message messages={messages} />
             <form onSubmit={handleSubmit} className="chat-input-form">
                 <div className="input-with-emoji">
                     <Input
@@ -95,21 +100,32 @@ const InputForm: FC<{messages: M[]}> = ({messages}) => {
                         type="default"
                         onClick={handleEmojiButtonClick}
                         className="emoji-button"
-
                     >
                         😀
                     </Button>
                     {showEmojiPicker && (
                         <div className="emoji-picker-container" onMouseEnter={handleMouseEnter}
                              onMouseLeave={handleMouseLeave}>
-                            <EmojiPicker onEmojiClick={handleEmojiClick}/>
+                            <EmojiPicker onEmojiClick={handleEmojiClick} />
                         </div>
                     )}
                 </div>
-                <Button htmlType={'submit'} className="send-button">
+                <Button htmlType='submit' className="send-button">
                     Send
                 </Button>
             </form>
+            <Modal
+                title="User Profile"
+                visible={modalIsOpen}
+                onCancel={closeModal}
+                footer={null}
+                closable={true}
+                closeIcon={<span style={{ fontSize: '1.5em' }}>✖</span>}
+            >
+                <div>
+                    <p><strong>Login:</strong> {currentChatUser?.login}</p>
+                </div>
+            </Modal>
         </div>
     );
 }
