@@ -2,12 +2,14 @@ import React, {useEffect, useState} from 'react';
 import './App.css';
 import InputForm from './components/InputForm';
 import {Avatar, List} from "antd";
-import {UserItem, Message} from "./Type/Type";
+import {UserItem, Message, SmallContact} from "./Type/Type";
 import VirtualList from 'rc-virtual-list';
 import Modal from './components/Modal';
 import AddContactField from "./components/AddContactField";
 import {io} from 'socket.io-client';
 import {socket} from "./models/socket";
+import {currentChatUserStore, setCurrentChatUser} from "./models/init";
+import { useStore } from 'effector-react';
 let init = false;
 interface Contact {
     id: string;
@@ -72,10 +74,11 @@ function App() {
         setContacts(prevContacts => [...prevContacts, newContact]);
         setIsModalOpen(false);
     };
-
+    currentChatUserStore.watch((state) => {
+        console.log('Current chat user:', state);
+    });
     return (
         <div className="App">
-            {}
 
             <List style={{width: 'auto', flexDirection: 'row', minWidth: '40%'}}>
                 <List style={{ width: 'auto', flexDirection: 'row', minWidth: '40%' }}>
@@ -85,7 +88,7 @@ function App() {
                         dataSource={contacts}
                         renderItem={contact => (
                             <div style={{display: 'flex', flexDirection: 'column'}}>
-                                <button onClick={() => setActiveContact(contact.id)}>
+                                <button onClick={() => setCurrentChatUser({login: contact.name})}>
                                     <List.Item.Meta
                                         avatar={<Avatar>{contact.name.charAt(0)}</Avatar>}
                                         title={contact.name}
@@ -95,46 +98,14 @@ function App() {
 
                         )}
                     />
-                    <VirtualList
-                        data={data}
-                        height={viewportHeight - 52}
-                        itemHeight={47}
-                        itemKey="email"
-                        onScroll={onScroll}
-                    >
-                        {(item: UserItem) => (
-                            <List.Item key={item.email}>
-                                <List.Item.Meta
-                                    avatar={<Avatar src={item.picture.large} />}
-                                    title={<a href="https://ant.design">{item.name.last}</a>}
-                                    description={item.email}
-                                />
-                                <div>Content</div>
-                            </List.Item>
-                        )}
-                    </VirtualList>
+
                 </List>
                 <Modal isOpen={isModalOpen} onClose={handleClose} />
-                <VirtualList
-                    data={data}
-                    height={viewportHeight - 52}
-                    itemHeight={47}
-                    itemKey="email"
-                    onScroll={onScroll}
-                >
-                    {(item: UserItem) => (
-                        <List.Item key={item.email}>
-                            <List.Item.Meta
-                                avatar={<Avatar src={item.picture.large}/>}
-                                title={<a href="https://ant.design">{item.name.last}</a>}
-                                description={item.email}
-                            />
-                            <div>Content</div>
-                        </List.Item>
-                    )}
-                </VirtualList>
             </List>
-            <InputForm messages={messages}/>
+            <div className={'chat-form'}>
+
+                <InputForm messages={messages}/>
+            </div>
             <Modal isOpen={isModalOpen} onClose={handleClose}/>
             {}
 
