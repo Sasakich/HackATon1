@@ -82,10 +82,10 @@ const Modal: FC<ModalProps> = ({isOpen, onClose}) => {
     console.log("done");
   };
   if (!isOpen) return null;
-  const aboba = async () => {
+  const testAuth = async () => {
     console.log("asda")
     const res = await fetch(
-        'http://localhost:3000/api/me', {
+        'http://localhost:3000/auth/github', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -122,8 +122,8 @@ const Modal: FC<ModalProps> = ({isOpen, onClose}) => {
                    style={{display: 'block', margin: '5px 0', width: 250}}/>
           </label>
           <div style={{backgroundColor: '#fff', padding: 20, display: "flex"}}>
-            <button type="submit" style={{display: 'block', margin: '10px'}} onClick={aboba}>Войти</button>
-            <button type="submit" style={{display: 'block', margin: '10px'}} onClick={loginWithGithub}>Войти с помощью gitHub</button>
+            <button type="submit" style={{display: 'block', margin: '10px'}} >Войти</button>
+            <button type="submit" style={{display: 'block', margin: '10px'}} onClick={testAuth}>Войти с помощью gitHub</button>
           </div>
         </form>
 

@@ -1,6 +1,10 @@
 import express, {Request, Response} from 'express';
 import sqlite3 from 'sqlite3';
 import {open} from 'sqlite';
+const cookieParser = require("cookie-parser");
+const passport = require('passport');
+const expressSession = require('express-session');
+const { myPassport } = require('./auth');
 import {withApiRoutes} from './controllers';
 import {Server} from 'socket.io';
 import http from 'http';
@@ -23,6 +27,12 @@ const createApp = async () => {
         : '';
 
     const app = express();
+    app.use(cookieParser());
+    app.use(expressSession({
+        secret: '1234567890', name: 'sessionId', resave: false, saveUninitialized: false,
+    }));
+    app.use(myPassport.initialize());
+    app.use(myPassport.session());
     let viteServer: any;
 
     if (isProduction) {
@@ -41,6 +51,16 @@ const createApp = async () => {
         filename: join(__dirname, 'database', 'database.db'),
         driver: sqlite3.Database
     });
+
+    app.get('/auth/github', passport.authenticate('github'));
+
+    app.get('/auth/github/callback',
+        passport.authenticate('github', { failureRedirect: 'http://localhost:3000' }),
+        (req, res) => {
+            console.log('passport auth callback fired');
+            res.redirect('http://localhost:3000')
+        }
+    );
     withApiRoutes(app);
     app.use('/api/me',  async (_req: Request, res: Response) => {
         // const name = names[new Date().getDay()];
