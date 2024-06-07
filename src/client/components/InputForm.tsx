@@ -3,7 +3,7 @@ import { Message as M, SmallContact } from "../Type/Type";
 import React, { useState, FormEvent, ChangeEvent, FC, useEffect } from 'react';
 import './InputForm.css';
 import { Input, Modal, Button, message, Upload, UploadProps, Avatar } from "antd";
-import { UploadOutlined, UserOutlined } from '@ant-design/icons';
+import { UploadOutlined, UserOutlined, PaperClipOutlined, SendOutlined } from '@ant-design/icons';
 import { socket } from "../models/socket";
 import { $password, $userInput, currentChatUserStore } from "../models/init";
 import { useUnit } from "effector-react";
@@ -43,7 +43,12 @@ const InputForm: FC = () => {
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [messages, setMessages] = useState<M[]>([]);
+    const [isDarkTheme, setIsDarkTheme] = useState<boolean>(false); // Добавлено для переключения темы
 
+    const toggleTheme = () => {
+        setIsDarkTheme(prevState => !prevState);
+    };
+    
     useEffect(() => {
         const fetchMessages = async () => {
             try {
@@ -135,11 +140,25 @@ const InputForm: FC = () => {
 
     return (
         <div className="chat-container">
-            <button className='small-contact' onClick={openModal}>
+            <button className='small-contact' onClick={openModal} style={{ 
+                paddingBottom: '25px', 
+                paddingTop: '25px',  
+                borderLeft: 'none',
+                borderTop: 'none',
+                borderRight: 'none',
+                borderBottom: 'none',
+                backgroundColor: 'rgb(213, 179, 138)',
+            }}>
                 {currentChatUser?.login ?? 'No User'}
             </button>
             <Message messages={messages} />
             <form onSubmit={handleSubmit} className="chat-input-form">
+                <Upload {...uploadProps}>
+                    <Button icon={<PaperClipOutlined style={{ fontSize: '35px' }} />}
+                            className="upload-button"
+                            style={{ border: 'none' }}
+                    />
+                </Upload>
                 <div className="input-with-emoji">
                     <Input
                         type="text"
@@ -147,11 +166,13 @@ const InputForm: FC = () => {
                         onChange={handleInputChange}
                         placeholder="Type your message..."
                         className="chat-input"
+                        style={{ paddingLeft: '30px', border: 'none' }}
                     />
                     <Button
                         type="default"
                         onClick={handleEmojiButtonClick}
                         className="emoji-button"
+                        style={{ fontSize: '30px', width: '60px', lineHeight: '20px' }}
                     >
                         😀
                     </Button>
@@ -162,12 +183,12 @@ const InputForm: FC = () => {
                         </div>
                     )}
                 </div>
-                <Button htmlType='submit' className="send-button">
-                    Send
-                </Button>
-                <Upload {...uploadProps}>
-                    <Button icon={<UploadOutlined />} className="upload-button">Upload Image</Button>
-                </Upload>
+                <Button 
+                    htmlType='submit' 
+                    className="send-button" 
+                    icon={<SendOutlined style={{ fontSize: '35px' }} />} 
+                    style={{ border: 'none' }}
+                />
             </form>
             <Modal
                 title="User Profile"

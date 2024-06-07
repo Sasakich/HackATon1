@@ -4,16 +4,21 @@
     position: fixed;
     bottom: 0;
     right: 0;
-    width: 60%;
+    width: 70%;
     height: 100%;
+    /* background-color: rgb(217, 242, 230); */
+    /* background-color: #e1d2c0; */
+    background-color: rgb(248, 235, 219);
+    /* background-color: #ffffff; */
 }
 .chat-input-form{
     /* width: 100%; */
     display: flex;
     align-items: center;
-    padding: 10px;
-    background-color: #f0f0f0;
-    margin-top: -20px;
+    padding: 16px;
+    background-color: #ffffff;
+    margin-top: -80px;
+    /* border-left: #f0f0f0; */
 }
 /* .chat-input {
     border: 1px solid #dadada;
@@ -80,4 +85,31 @@
     position: absolute;
     top: calc(100% - 500px);
     left: calc(100% - 300px);
+}
+
+.light-theme {
+    background-color: rgb(248, 235, 219); /* Цвет фона для светлой темы */
+    color: #000000; /* Цвет текста для светлой темы */
+
+
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 70%;
+    height: 100%;
+    /* background-color: rgb(248, 235, 219); */
+}
+
+.dark-theme {
+    background-color: #333333; /* Цвет фона для темной темы */
+    color: #ffffff; /* Цвет текста для темной темы */
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 70%;
+    height: 100%;
 }

@@ -19,6 +19,9 @@ interface Contact {
 function isAuth() {
   return Boolean(localStorage.getItem("accessToken"))
 }
+const getInitialTheme = () => {
+    return localStorage.getItem('theme') || 'light';
+}
 function App() {
     const currentUser = useUnit(currentUserStore)
     const [messages, setMessages] = useState<Message[]>([]);
@@ -30,7 +33,12 @@ function App() {
     const fakeDataUrl =
         'https://randomuser.me/api/?results=20&inc=name,gender,email,nat,picture&noinfo';
     const [data, setData] = useState<UserItem[]>([]);
-
+    const [theme, setTheme] = useState(getInitialTheme())
+    const handleSetTheme = () => {
+        const nextTheme = theme === 'light' ? 'dark' : 'light'
+        setTheme(nextTheme)
+        localStorage.setItem('theme', nextTheme)
+    }
     // useEffect(() => {
     //     const handleResize = () => {
     //         setViewportHeight(window.innerHeight);
@@ -144,24 +152,44 @@ function App() {
     return (
         <div className="App">
             {contextHolder}
-            <List style={{width: 'auto', flexDirection: 'row', minWidth: '40%'}}>
-                <List style={{ width: 'auto', flexDirection: 'row', minWidth: '40%' }}>
+            <List style={{width: 'auto', flexDirection: 'row', minWidth: '30%'}}>
+                <List style={{ width: 'auto', flexDirection: 'row', minWidth: '30%' }}>
                     <AddContactField onAddContact={handleAddContact} />
                     <List
                         itemLayout="horizontal"
                         dataSource={contacts}
                         renderItem={contact => (
-                            <div style={{display: 'flex', flexDirection: 'column'}}>
-                                <button onClick={() => getUserId(contact.name).then(ans => getChatId(ans, currentUser.userId).then(resp => setCurrentChatUser({login: contact.name,
-                                    chatId: resp,
-                                    userId: ans})))}>
-                                    <List.Item.Meta
-                                        avatar={<Avatar>{contact.name.charAt(0)}</Avatar>}
-                                        title={contact.name}
-                                    />
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <button
+                                    onClick={() =>
+                                        getUserId(contact.name).then(ans =>
+                                            getChatId(ans, currentUser.userId).then(resp =>
+                                                setCurrentChatUser({
+                                                    login: contact.name,
+                                                    chatId: resp,
+                                                    userId: ans
+                                                })
+                                            )
+                                        )
+                                    }
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        border: 'none',
+                                        background: 'none',
+                                        borderBottom: '1px solid #f0f0f0',
+                                        cursor: 'pointer',
+                                        padding: '16px',
+                                        fontSize: '18px',
+                                        transition: 'background-color 0.3s ease',
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                >
+                                    <Avatar size={48} style={{ backgroundColor: 'rgb(213, 179, 138)', marginRight: '20px' }}>{contact.name.charAt(0)}</Avatar>
+                                    <List.Item.Meta title={contact.name} style={{ margin: 0 }} />
                                 </button>
                             </div>
-
                         )}
                     />
 

@@ -36,6 +36,7 @@ const AddContactField: React.FC<AddContactFieldProps> = ({ onAddContact }) => {
                 onChange={handleInputChange}
                 placeholder="Type your contact name..."
                 className="chat-input"
+                style={{ borderRadius: '20px', padding: '10px', fontSize: '16px', width: '100%' }}
             />
             <Button  htmlType={'submit'} className="send-button">
                 <UserAddOutlined style={{ fontSize: '16px' }} />
