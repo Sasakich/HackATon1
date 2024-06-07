@@ -2,6 +2,7 @@ import express, {Request, Response} from 'express';
 import sqlite3 from 'sqlite3';
 import {open} from 'sqlite';
 import {withApiRoutes} from './controllers';
+import cors from 'cors'
 import {Server} from 'socket.io';
 import http from 'http';
 import {readFile} from 'node:fs/promises';
@@ -23,6 +24,8 @@ const createApp = async () => {
         : '';
 
     const app = express();
+    app.use(cors())
+    app.use(express.json())
     let viteServer: any;
 
     if (isProduction) {
@@ -177,47 +180,41 @@ const createApp = async () => {
 
     // Route to create a new chat
     app.post('/createChat', async (req, res) => {
-        const {name, userIds} = req.body;
+        console.log('Received request body:', JSON.stringify(req.body, null, 2));
+
+        const { name, userIds } = req.body;
+
+        if (!name || !Array.isArray(userIds)) {
+            return res.status(400).json({ message: 'Missing name or userIds' });
+        }
+
         try {
-            var arr: any[] = [];
+            let arr: any[] = [];
             for (const userId of userIds) {
-                const chats = await db.all(
-                    `SELECT * FROM usersToChats WHERE idUser = ?`,
-                    userId
-                );
-                var tmp = [];
-                for (const chat of chats) {
-                    tmp.push(chat.idChat);
-                }
+                const chats = await db.all(`SELECT idChat FROM chatsToUsers WHERE idUser = ?`, userId);
+                const tmp = chats.map(chat => chat.idChat);
                 arr.push(tmp);
             }
-            // console.log(intersection(...arr))
-            if (intersection(arr).length != 0) {
-                res.json(intersection(arr));
-                res.status(201).send('Chat already exists');
+
+            const commonChats = intersection(arr);
+            if (commonChats.length !== 0) {
+                const existingChatId = commonChats[0]; // Assuming you return the first common chat ID
+                return res.status(201).json({ message: 'Chat already exists', chatId: existingChatId });
             } else {
-                // Insert chat into chats table
-                const result = await db.run(
-                    'INSERT INTO chats (name) VALUES (?)',
-                    name
-                );
+                const result = await db.run(`INSERT INTO chats (name) VALUES (?)`, name);
                 const chatId = result.lastID;
 
-                // Insert records into chatsToUsers table
                 for (const userId of userIds) {
-                    await db.run(
-                        'INSERT INTO chatsToUsers (idChat, idUser) VALUES (?, ?)',
-                        [chatId, userId]
-                    );
+                    await db.run(`INSERT INTO chatsToUsers (idUser, idChat) VALUES (?, ?)`, [userId, chatId]);
                 }
 
-
-                res.status(201).send('Chat created successfully');
+                return res.status(201).json({ message: 'Chat created successfully', chatId: chatId });
             }
         } catch (error) {
             console.error('Error creating chat:', error);
-            res.status(500).send('Error creating chat');
-        }});
+            return res.status(500).send('Internal Server Error');
+        }
+    });
 
     // Route to get user by login and password
     app.get('/getUser', async (req, res) => {
@@ -228,6 +225,7 @@ const createApp = async () => {
                 [login, password]
             );
             if (user) {
+                console.log(user)
                 res.json(user);
             } else {
                 res.status(404).send('User not found');

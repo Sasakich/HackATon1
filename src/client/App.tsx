@@ -64,9 +64,34 @@ function App() {
             });
     };
     const [isModalOpen, setIsModalOpen] = useState(!isAuth()); // Управление видимостью модального окна
-    const getChatId = () => {
-        return 1
-    }
+    const getChatId = async () => {
+        try {
+            const response = await fetch("http://localhost:3000/createChat", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: '123',
+                    userIds: [1, 2]
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            console.log(data);
+            if (data.chatId) {
+                console.log('Chat ID:', data.chatId);
+                localStorage.setItem("chatId", data.chatId);
+            }
+
+            return data.chatId;
+        } catch (error) {
+            console.error('Error fetching chat ID:', error);
+        }
+    };
     const handleClose = () => {
         setIsModalOpen(false);
     };
@@ -90,7 +115,7 @@ function App() {
                         dataSource={contacts}
                         renderItem={contact => (
                             <div style={{display: 'flex', flexDirection: 'column'}}>
-                                <button onClick={() => setCurrentChatUser({login: contact.name, chatId: getChatId()})}>
+                                <button onClick={() => getChatId().then(ans => setCurrentChatUser({login: contact.name, chatId: ans}))}>
                                     <List.Item.Meta
                                         avatar={<Avatar>{contact.name.charAt(0)}</Avatar>}
                                         title={contact.name}
