@@ -1,5 +1,5 @@
 import {combine, createEffect, createEvent, createStore, restore, sample} from 'effector'
-import {SmallContact} from "../Type/Type";
+import {CurrentUser, SmallContact} from "../Type/Type";
 
 interface User {
     id: number;
@@ -57,5 +57,11 @@ sample({
 export const setCurrentChatUser = createEvent<SmallContact>();
 export const currentChatUserStore = createStore<SmallContact>({
     login: 'Start chatting',
-    chatId: 1
+    chatId: 1,
+    userId: 0
 }).on(setCurrentChatUser, (state, payload) => payload);
+export const setCurrentUser = createEvent<CurrentUser>();
+export const currentUserStore = createStore<CurrentUser>({
+    username: 'Start chatting',
+    userId: 1
+}).on(setCurrentUser, (state, payload) => payload);

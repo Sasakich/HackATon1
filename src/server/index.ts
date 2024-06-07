@@ -7,6 +7,7 @@ import {Server} from 'socket.io';
 import http from 'http';
 import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
+
 // import {userRoute} from "./controllers/user";
 // require('./generateIcon.js');
 const getIcon: any = require('./generateIcon.js').getIcon;
@@ -217,15 +218,15 @@ const createApp = async () => {
     });
 
     // Route to get user by login and password
-    app.get('/getUser', async (req, res) => {
-        const { login, password } = req.query;
+    app.post('/getUser', async (req, res) => {
+        const { username, password } = req.body;
         try {
             const user = await db.get(
                 'SELECT * FROM users WHERE login = ? AND password = ?',
-                [login, password]
+                [username, password]
             );
             if (user) {
-                console.log(user)
+                console.log(user);
                 res.json(user);
             } else {
                 res.status(404).send('User not found');
@@ -235,7 +236,43 @@ const createApp = async () => {
             res.status(500).send('Error fetching user');
         }
     });
+    app.get('/getUserById', async (req, res) => {
+        const {username} = req.query;
+        console.log(`Trying to find user: ${req.body}`)
+        try {
+            const user = await db.get(
+                'SELECT * FROM users WHERE login = ?',
+                [username]
+            );
+            if (user) {
+                console.log(user);
+                res.json({userId: user.id});
+            } else {
+                res.status(404).send('User not found');
+            }
+        } catch (error) {
+            console.error('Error fetching user:', error);
+            res.status(500).send('Error fetching user');
+        }
+    });
+    app.post('/register', async (req, res) => {
+        const { login, password } = req.body;
+        if (!login || !password) {
+            return res.status(400).json({ message: 'Missing login or password' });
+        }
+        try {
+            const userExists = await db.get('SELECT * FROM users WHERE login = ?', [login]);
+            if (userExists) {
+                return res.status(409).json({ message: 'User already exists' });
+            }
 
+            await db.run('INSERT INTO users (login, password) VALUES (?, ?)', [login, password]);
+            return res.status(201).json({ message: 'User registered successfully' });
+        } catch (error) {
+            console.error('Error registering user:', error);
+            return res.status(500).send('Internal Server Error');
+        }
+    });
     // Route to get all chats
     app.get('/getChats', async (req, res) => {
         try {
@@ -251,15 +288,13 @@ const createApp = async () => {
 
     // Route to get all chats
     app.get('/getChat/:chatId', async (req, res) => {
-        const { chatId } = req.query;
+        const { chatId } = req.params;
         try {
-            const chats = await db.all('SELECT FROM chats WHERE chatId = ?',
-                chatId
-            );
-            res.json(chats);
+            const messages = await db.all('SELECT * FROM messages WHERE chatId = ?', chatId);
+            res.json(messages);
         } catch (error) {
-            console.error('Error fetching chats:', error);
-            res.status(500).send('Error fetching chats');
+            console.error('Error fetching messages:', error);
+            res.status(500).send('Error fetching messages');
         }
     });
 

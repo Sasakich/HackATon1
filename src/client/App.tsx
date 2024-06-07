@@ -8,8 +8,8 @@ import Modal from './components/Modal';
 import AddContactField from "./components/AddContactField";
 import { io } from 'socket.io-client';
 import { socket } from "./models/socket";
-import { currentChatUserStore, setCurrentChatUser } from "./models/init";
-import { useStore } from 'effector-react';
+import {currentChatUserStore, currentUserStore, setCurrentChatUser} from "./models/init";
+import {useStore, useUnit} from 'effector-react';
 let init = false;
 interface Contact {
     id: string;
@@ -20,7 +20,7 @@ function isAuth() {
   return Boolean(localStorage.getItem("accessToken"))
 }
 function App() {
-
+    const currentUser = useUnit(currentUserStore)
     const [messages, setMessages] = useState<Message[]>([]);
     const [viewportHeight, setViewportHeight] = useState<number>(window.innerHeight);
     const [activeContact, setActiveContact] = useState<string>('');
@@ -73,8 +73,32 @@ function App() {
                 setData(data.concat(body.results));
             });
     };
-    const [isModalOpen, setIsModalOpen] = useState(!isAuth()); // Управление видимостью модального окна
-    const getChatId = async () => {
+    const [isModalOpen, setIsModalOpen] = useState(true);
+    const getUserId = async (username: string) => {
+        console.log("FINDING USER BY ID")
+        try {
+            const response = await fetch(`http://localhost:3000/getUserById?username=${username}`, {
+                method: "GET",
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+
+            console.log(data);
+            if (data.chatId) {
+                console.log('Chat ID:', data.chatId);
+                localStorage.setItem("chatId", data.chatId);
+            }
+            return data.userId;
+        } catch (error) {
+            console.error('Error fetching chat ID:', error);
+        }
+    }
+    const getChatId = async (firstUserId : number, secondUserId : number) => {
         try {
             const response = await fetch("http://localhost:3000/createChat", {
                 method: "POST",
@@ -82,8 +106,8 @@ function App() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    name: '123',
-                    userIds: [1, 2]
+                    name: 'FirstChat',
+                    userIds: [firstUserId, secondUserId]
                 })
             });
 
@@ -114,6 +138,9 @@ function App() {
     currentChatUserStore.watch((state) => {
         console.log('Current chat user:', state);
     });
+    currentUserStore.watch((state) => {
+        console.log('Current user:', state);
+    });
     return (
         <div className="App">
             {contextHolder}
@@ -125,7 +152,9 @@ function App() {
                         dataSource={contacts}
                         renderItem={contact => (
                             <div style={{display: 'flex', flexDirection: 'column'}}>
-                                <button onClick={() => getChatId().then(ans => setCurrentChatUser({login: contact.name, chatId: ans}))}>
+                                <button onClick={() => getUserId(contact.name).then(ans => getChatId(ans, currentUser.userId).then(resp => setCurrentChatUser({login: contact.name,
+                                    chatId: resp,
+                                    userId: ans})))}>
                                     <List.Item.Meta
                                         avatar={<Avatar>{contact.name.charAt(0)}</Avatar>}
                                         title={contact.name}
