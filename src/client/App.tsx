@@ -1,14 +1,14 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import InputForm from './components/InputForm';
-import {Avatar, List} from "antd";
-import {UserItem, Message, SmallContact} from "./Type/Type";
+import { Avatar, List, notification } from "antd";
+import { UserItem, Message, SmallContact } from "./Type/Type";
 import VirtualList from 'rc-virtual-list';
 import Modal from './components/Modal';
 import AddContactField from "./components/AddContactField";
-import {io} from 'socket.io-client';
-import {socket} from "./models/socket";
-import {currentChatUserStore, setCurrentChatUser} from "./models/init";
+import { io } from 'socket.io-client';
+import { socket } from "./models/socket";
+import { currentChatUserStore, setCurrentChatUser } from "./models/init";
 import { useStore } from 'effector-react';
 let init = false;
 interface Contact {
@@ -26,6 +26,7 @@ function App() {
     const [activeContact, setActiveContact] = useState<string>('');
     const [activeDialog, setActiveDialog] = useState<{}>({});
     const [contacts, setContacts] = useState<Contact[]>([]);
+    const [api, contextHolder] = notification.useNotification();
     const fakeDataUrl =
         'https://randomuser.me/api/?results=20&inc=name,gender,email,nat,picture&noinfo';
     const [data, setData] = useState<UserItem[]>([]);
@@ -42,13 +43,22 @@ function App() {
     // }, []);
     useEffect(() => {
         const handler = (message: Message) => {
-            setMessages(m => [...m, message])
-        }
+            setMessages(m => [...m, message]);
+            api.info({
+                // message: `New message from ${name}`,
+                message: `New message from 1`,
+                description: '1',
+                placement: 'bottomRight',
+            });
+            if (navigator.vibrate) {
+                navigator.vibrate(200); // Вибрация на 200 миллисекунд
+            }
+        };
         socket.on('chat message', handler);
         return () => {
             socket.off('chat message', handler);
-        }
-    }, []);
+        };
+    }, [api]);
 
     const onScroll = (e: React.UIEvent<HTMLElement, UIEvent>) => {
         if (Math.abs(e.currentTarget.scrollHeight - e.currentTarget.scrollTop - viewportHeight + 52) <= 1) {
@@ -106,7 +116,7 @@ function App() {
     });
     return (
         <div className="App">
-
+            {contextHolder}
             <List style={{width: 'auto', flexDirection: 'row', minWidth: '40%'}}>
                 <List style={{ width: 'auto', flexDirection: 'row', minWidth: '40%' }}>
                     <AddContactField onAddContact={handleAddContact} />
