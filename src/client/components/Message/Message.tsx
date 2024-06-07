@@ -51,7 +51,7 @@ const Message: FC<{messages: M[]}> = ({messages}) => {
                     text: x.message,
                     userId: x.userId,
                     timestamp: x.createdAt,
-                    isCurrentUser: x.userId === userInput
+                    isCurrentUser: x.userId == userInput
                 }))}
                 // data={messages.map(x => x['text'] + " - " + x["userId"])}
                 height={viewportHeight - 52}

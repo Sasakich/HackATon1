@@ -1,17 +1,19 @@
-import React, {useState, FormEvent, ChangeEvent, FC} from 'react';
-import './InputForm.css';
-import { Input} from "antd";
-import {Button} from "antd";
 import Message from "./Message/Message";
-import {Message as M} from "../Type/Type";
-import {socket} from "../models/socket";
-import {$password, $user, $userInput} from "../models/init";
-import {useUnit} from "effector-react";
+import { Message as M, SmallContact } from "../Type/Type";
+import React, { useState, FormEvent, ChangeEvent, FC, useEffect } from 'react';
+import './InputForm.css';
+import { Input, Modal, Button, message, Upload, UploadProps } from "antd";
+import { UploadOutlined } from '@ant-design/icons';
+import { socket } from "../models/socket";
+import { $password, $userInput, currentChatUserStore } from "../models/init";
+import { useUnit } from "effector-react";
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import { Store } from "effector";
 
-// import {Message} from "./Type/Type";
-
-
+// Типы сообщений и пользователя
+type ChatUser = {
+    login: string;
+};
 
 interface Message {
     text: string;
@@ -19,14 +21,25 @@ interface Message {
     timestamp: string;
 }
 
+// Кастомный хук для подписки на стор и обновления компонента
+function useInit<T>(store: Store<T>): T {
+    const [state, setState] = useState(store.getState());
+    useEffect(() => {
+        const unsubscribe = store.watch(setState);
+        return () => {
+            unsubscribe();
+        };
+    }, [store]);
 
+    return state;
+}
 
-const InputForm: FC<{messages: M[]}> = ({messages}) => {
+const InputForm: FC<{ messages: M[] }> = ({ messages }) => {
+    const currentChatUser = useInit(currentChatUserStore);
     const [username, password] = useUnit([$userInput, $password]);
-
-    //const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState<string>('');
     const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
+    const [modalIsOpen, setModalIsOpen] = useState(false);
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
         setInputValue(event.target.value);
@@ -35,13 +48,9 @@ const InputForm: FC<{messages: M[]}> = ({messages}) => {
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (inputValue.trim() !== '') {
-            const timestamp = new Date().toISOString();  // Get the current time
-            socket.emit('chat message', { "chatId": 1, "userId": username, "createdAt": timestamp, "updatedAt": timestamp, "text": inputValue, name: "", image: ""});// chatId, userId, createdAt, updatedAt, text
+            const timestamp = new Date().toISOString();
+            socket.emit('chat message', { chatId: 1, userId: username, createdAt: timestamp, updatedAt: timestamp, text: inputValue, name: "", image: "" });
         }
-        // if (inputValue.trim() !== '') {
-        //     setMessages([...messages, {text: inputValue, sender: 'user'}]);
-        //     setInputValue('');
-        // }
         setInputValue('');
     };
 
@@ -62,14 +71,48 @@ const InputForm: FC<{messages: M[]}> = ({messages}) => {
         setShowEmojiPicker(false);
     };
 
+    const openModal = () => {
+        setModalIsOpen(true);
+    };
 
+    const closeModal = () => {
+        setModalIsOpen(false);
+    };
+
+    const uploadProps: UploadProps = {
+        name: 'file',
+        action: '/upload',  // путь к вашему серверному маршруту для загрузки
+        headers: {
+            authorization: 'authorization-text',  // убедитесь, что этот заголовок правильный
+        },
+        onChange(info) {
+            if (info.file.status !== 'uploading') {
+                console.log(info.file, info.fileList);
+            }
+            if (info.file.status === 'done') {
+                console.log('Upload response:', info.file.response);
+                if (info.file.response && info.file.response.url) {
+                    message.success(`${info.file.name} file uploaded successfully`);
+                    const timestamp = new Date().toISOString();
+                    socket.emit('chat message', { chatId: currentChatUser.chatId, userId: username, createdAt: timestamp, updatedAt: timestamp, text: "", name: "", image: info.file.response.url });
+                } else {
+                    message.error(`${info.file.name} file upload failed: No URL in response`);
+                }
+            } else if (info.file.status === 'error') {
+                console.error('Upload error:', info.file.error);
+                message.error(`${info.file.name} file upload failed.`);
+            }
+        },
+    };
 
     return (
         <div className="chat-container">
-
-            <Message messages={messages}/>
-            <form onSubmit={handleSubmit} className="chat-input-form" >
-                <div className="input-with-emoji" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+            <button className='small-contact' onClick={openModal}>
+                {currentChatUser?.login ?? 'No User'}
+            </button>
+            <Message messages={messages} />
+            <form onSubmit={handleSubmit} className="chat-input-form">
+                <div className="input-with-emoji">
                     <Input
                         type="text"
                         value={inputValue}
@@ -85,15 +128,31 @@ const InputForm: FC<{messages: M[]}> = ({messages}) => {
                         😀
                     </Button>
                     {showEmojiPicker && (
-                        <div className="emoji-picker-container">
-                          <EmojiPicker onEmojiClick={handleEmojiClick} />
+                        <div className="emoji-picker-container" onMouseEnter={handleMouseEnter}
+                             onMouseLeave={handleMouseLeave}>
+                            <EmojiPicker onEmojiClick={handleEmojiClick} />
                         </div>
                     )}
                 </div>
-                <Button htmlType={'submit'} className="send-button">
+                <Button htmlType='submit' className="send-button">
                     Send
                 </Button>
+                <Upload {...uploadProps}>
+                    <Button icon={<UploadOutlined />} className="upload-button">Upload Image</Button>
+                </Upload>
             </form>
+            <Modal
+                title="User Profile"
+                visible={modalIsOpen}
+                onCancel={closeModal}
+                footer={null}
+                closable={true}
+                closeIcon={<span style={{ fontSize: '1.5em' }}>✖</span>}
+            >
+                <div>
+                    <p><strong>Login:</strong> {currentChatUser?.login}</p>
+                </div>
+            </Modal>
         </div>
     );
 }

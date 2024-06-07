@@ -29,7 +29,7 @@ const AddContactField: React.FC<AddContactFieldProps> = ({ onAddContact }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="chat-input-form" style={{ width: '100%' }}>
+        <form onSubmit={handleSubmit} className="chat-input-form" style={{}}>
             <Input
                 type="text"
                 value={inputValue}

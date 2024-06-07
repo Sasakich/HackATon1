@@ -1,4 +1,5 @@
 import {combine, createEffect, createEvent, createStore, restore, sample} from 'effector'
+import {SmallContact} from "../Type/Type";
 
 interface User {
     id: number;
@@ -52,3 +53,9 @@ sample({
     clock: getUsersFx.doneData,
     target: $user
 })
+
+export const setCurrentChatUser = createEvent<SmallContact>();
+export const currentChatUserStore = createStore<SmallContact>({
+    login: 'Start chatting',
+    chatId: 1
+}).on(setCurrentChatUser, (state, payload) => payload);
