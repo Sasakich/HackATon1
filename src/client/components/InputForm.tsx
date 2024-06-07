@@ -2,8 +2,8 @@ import Message from "./Message/Message";
 import { Message as M, SmallContact } from "../Type/Type";
 import React, { useState, FormEvent, ChangeEvent, FC, useEffect } from 'react';
 import './InputForm.css';
-import { Input, Modal, Button, message, Upload, UploadProps } from "antd";
-import { UploadOutlined } from '@ant-design/icons';
+import { Input, Modal, Button, message, Upload, UploadProps, Avatar } from "antd";
+import { UploadOutlined, UserOutlined, PaperClipOutlined, SendOutlined } from '@ant-design/icons';
 import { socket } from "../models/socket";
 import { $password, $userInput, currentChatUserStore } from "../models/init";
 import { useUnit } from "effector-react";
@@ -13,6 +13,7 @@ import { Store } from "effector";
 // Типы сообщений и пользователя
 type ChatUser = {
     login: string;
+    chatId: string;
 };
 
 interface Message {
@@ -34,12 +35,44 @@ function useInit<T>(store: Store<T>): T {
     return state;
 }
 
-const InputForm: FC<{ messages: M[] }> = ({ messages }) => {
+const InputForm: FC = () => {
     const currentChatUser = useInit(currentChatUserStore);
     const [username, password] = useUnit([$userInput, $password]);
     const [inputValue, setInputValue] = useState<string>('');
     const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
     const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [messages, setMessages] = useState<M[]>([]);
+    const [isDarkTheme, setIsDarkTheme] = useState<boolean>(false); // Добавлено для переключения темы
+
+    const toggleTheme = () => {
+        setIsDarkTheme(prevState => !prevState);
+    };
+    
+    useEffect(() => {
+        const fetchMessages = async () => {
+            try {
+                const response = await fetch(`http://localhost:3000/getChat/${currentChatUser.chatId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setMessages(data);
+                } else {
+                    throw new Error('Failed to load messages');
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        };
+
+        if (currentChatUser?.chatId) {
+            fetchMessages();
+        }
+    }, [currentChatUser]);
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
         setInputValue(event.target.value);
@@ -49,9 +82,9 @@ const InputForm: FC<{ messages: M[] }> = ({ messages }) => {
         event.preventDefault();
         if (inputValue.trim() !== '') {
             const timestamp = new Date().toISOString();
-            socket.emit('chat message', { chatId: 1, userId: username, createdAt: timestamp, updatedAt: timestamp, text: inputValue, name: "", image: "" });
+            socket.emit('chat message', { chatId: currentChatUser.chatId, userId: username, createdAt: timestamp, updatedAt: timestamp, text: inputValue, name: "", image: "" });
+            setInputValue('');
         }
-        setInputValue('');
     };
 
     const handleEmojiButtonClick = () => {
@@ -81,17 +114,17 @@ const InputForm: FC<{ messages: M[] }> = ({ messages }) => {
 
     const uploadProps: UploadProps = {
         name: 'file',
-        action: '/upload',  // путь к вашему серверному маршруту для загрузки
+        action: '/upload',  // путь к серверному маршруту для загрузки
         headers: {
-            authorization: 'authorization-text',  // убедитесь, что этот заголовок правильный
+            authorization: 'authorization-text',  // заголовок
         },
         onChange(info) {
             if (info.file.status !== 'uploading') {
                 console.log(info.file, info.fileList);
             }
             if (info.file.status === 'done') {
-                console.log('Upload response:', info.file.response);
-                if (info.file.response && info.file.response.url) {
+                console.log('Upload response:', info.file.response);  // логируем ответ сервера
+                if (info.file.response && info.file.response.url) {  // сервер возвращает url
                     message.success(`${info.file.name} file uploaded successfully`);
                     const timestamp = new Date().toISOString();
                     socket.emit('chat message', { chatId: currentChatUser.chatId, userId: username, createdAt: timestamp, updatedAt: timestamp, text: "", name: "", image: info.file.response.url });
@@ -99,7 +132,7 @@ const InputForm: FC<{ messages: M[] }> = ({ messages }) => {
                     message.error(`${info.file.name} file upload failed: No URL in response`);
                 }
             } else if (info.file.status === 'error') {
-                console.error('Upload error:', info.file.error);
+                console.error('Upload error:', info.file.error);  // логируем ошибку
                 message.error(`${info.file.name} file upload failed.`);
             }
         },
@@ -107,11 +140,25 @@ const InputForm: FC<{ messages: M[] }> = ({ messages }) => {
 
     return (
         <div className="chat-container">
-            <button className='small-contact' onClick={openModal}>
+            <button className='small-contact' onClick={openModal} style={{ 
+                paddingBottom: '25px', 
+                paddingTop: '25px',  
+                borderLeft: 'none',
+                borderTop: 'none',
+                borderRight: 'none',
+                borderBottom: 'none',
+                backgroundColor: 'rgb(213, 179, 138)',
+            }}>
                 {currentChatUser?.login ?? 'No User'}
             </button>
             <Message messages={messages} />
             <form onSubmit={handleSubmit} className="chat-input-form">
+                <Upload {...uploadProps}>
+                    <Button icon={<PaperClipOutlined style={{ fontSize: '35px' }} />}
+                            className="upload-button"
+                            style={{ border: 'none' }}
+                    />
+                </Upload>
                 <div className="input-with-emoji">
                     <Input
                         type="text"
@@ -119,11 +166,13 @@ const InputForm: FC<{ messages: M[] }> = ({ messages }) => {
                         onChange={handleInputChange}
                         placeholder="Type your message..."
                         className="chat-input"
+                        style={{ paddingLeft: '30px', border: 'none' }}
                     />
                     <Button
                         type="default"
                         onClick={handleEmojiButtonClick}
                         className="emoji-button"
+                        style={{ fontSize: '30px', width: '60px', lineHeight: '20px' }}
                     >
                         😀
                     </Button>
@@ -134,12 +183,12 @@ const InputForm: FC<{ messages: M[] }> = ({ messages }) => {
                         </div>
                     )}
                 </div>
-                <Button htmlType='submit' className="send-button">
-                    Send
-                </Button>
-                <Upload {...uploadProps}>
-                    <Button icon={<UploadOutlined />} className="upload-button">Upload Image</Button>
-                </Upload>
+                <Button 
+                    htmlType='submit' 
+                    className="send-button" 
+                    icon={<SendOutlined style={{ fontSize: '35px' }} />} 
+                    style={{ border: 'none' }}
+                />
             </form>
             <Modal
                 title="User Profile"
@@ -149,7 +198,19 @@ const InputForm: FC<{ messages: M[] }> = ({ messages }) => {
                 closable={true}
                 closeIcon={<span style={{ fontSize: '1.5em' }}>✖</span>}
             >
-                <div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <Avatar
+                        size={64}
+                        style={{
+                            backgroundColor: avatarUrl ? 'transparent' : '#87d068',
+                            marginBottom: 16,
+                        }}
+                        icon={!avatarUrl && <UserOutlined />}
+                        src={avatarUrl || undefined}
+                    />
+                    <Upload {...uploadProps}>
+                        <Button icon={<UploadOutlined />}>Change Avatar</Button>
+                    </Upload>
                     <p><strong>Login:</strong> {currentChatUser?.login}</p>
                 </div>
             </Modal>
