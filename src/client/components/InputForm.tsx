@@ -2,8 +2,8 @@ import Message from "./Message/Message";
 import { Message as M, SmallContact } from "../Type/Type";
 import React, { useState, FormEvent, ChangeEvent, FC, useEffect } from 'react';
 import './InputForm.css';
-import { Input, Modal, Button, message, Upload, UploadProps } from "antd";
-import { UploadOutlined } from '@ant-design/icons';
+import { Input, Modal, Button, message, Upload, UploadProps, Avatar } from "antd";
+import { UploadOutlined, UserOutlined } from '@ant-design/icons';
 import { socket } from "../models/socket";
 import { $password, $userInput, currentChatUserStore } from "../models/init";
 import { useUnit } from "effector-react";
@@ -40,6 +40,7 @@ const InputForm: FC<{ messages: M[] }> = ({ messages }) => {
     const [inputValue, setInputValue] = useState<string>('');
     const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
     const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
         setInputValue(event.target.value);
@@ -81,25 +82,25 @@ const InputForm: FC<{ messages: M[] }> = ({ messages }) => {
 
     const uploadProps: UploadProps = {
         name: 'file',
-        action: '/upload',  // путь к вашему серверному маршруту для загрузки
+        action: '/upload',  // путь к серверному маршруту для загрузки
         headers: {
-            authorization: 'authorization-text',  // убедитесь, что этот заголовок правильный
+            authorization: 'authorization-text',  // заголовок
         },
         onChange(info) {
             if (info.file.status !== 'uploading') {
                 console.log(info.file, info.fileList);
             }
             if (info.file.status === 'done') {
-                console.log('Upload response:', info.file.response);
-                if (info.file.response && info.file.response.url) {
+                console.log('Upload response:', info.file.response);  // логируем ответ сервера
+                if (info.file.response && info.file.response.url) {  // сервер возвращает url
                     message.success(`${info.file.name} file uploaded successfully`);
                     const timestamp = new Date().toISOString();
-                    socket.emit('chat message', { chatId: currentChatUser.chatId, userId: username, createdAt: timestamp, updatedAt: timestamp, text: "", name: "", image: info.file.response.url });
+                    socket.emit('chat message', { chatId: 1, userId: username, createdAt: timestamp, updatedAt: timestamp, text: "", name: "", image: info.file.response.url });
                 } else {
                     message.error(`${info.file.name} file upload failed: No URL in response`);
                 }
             } else if (info.file.status === 'error') {
-                console.error('Upload error:', info.file.error);
+                console.error('Upload error:', info.file.error);  // логируем ошибку
                 message.error(`${info.file.name} file upload failed.`);
             }
         },
@@ -149,7 +150,19 @@ const InputForm: FC<{ messages: M[] }> = ({ messages }) => {
                 closable={true}
                 closeIcon={<span style={{ fontSize: '1.5em' }}>✖</span>}
             >
-                <div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <Avatar
+                        size={64}
+                        style={{
+                            backgroundColor: avatarUrl ? 'transparent' : '#87d068',
+                            marginBottom: 16,
+                        }}
+                        icon={!avatarUrl && <UserOutlined />}
+                        src={avatarUrl || undefined}
+                    />
+                    <Upload {...uploadProps}>
+                        <Button icon={<UploadOutlined />}>Change Avatar</Button>
+                    </Upload>
                     <p><strong>Login:</strong> {currentChatUser?.login}</p>
                 </div>
             </Modal>
