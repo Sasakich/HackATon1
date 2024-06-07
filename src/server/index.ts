@@ -8,7 +8,7 @@ import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 // import {userRoute} from "./controllers/user";
 // require('./generateIcon.js');
-// const getIcon: any = require('./generateIcon.js').getIcon;
+const getIcon: any = require('./generateIcon.js').getIcon;
 
 const CLIENT_ID = "2897c730c31dd10adb98";
 const CLIENT_SECRET = "5e58f80274b20bc1fe8cf264011d230290c4c72e";
@@ -110,85 +110,114 @@ const createApp = async () => {
         }
     });
 
-  app.get('/getAccessToken', async function (req, res) {
-    const params = "?client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&code=" + req.query.code;
-    console.log("test1")
-    await fetch("https://github.com/login/oauth/access_token" + params, {
-      method: "POST",
-      headers: {
-        "Accept": "application/json"
-      }
-    }).then((response) => {
-      return response.json();
-    }).then((data) => {
-      console.log(data);
-      res.json(data);
-    })
-  })
-
-  app.get('/getUserData', async function (req, res) {
-    req.get("Authorization");
-    await fetch("https://api.github.com/user", {
-      method: "GET",
-    //   headers: {
-    //     "Authorization": req.get("Authorization")
-    //   }
-    }).then((response) => {
-      return response.json();
-    }).then((data) => {
-      console.log(data);
-      res.json(data);
-    })
-  })
-  function intersection(arr: any) {
-    let arr1: any = arr[0];
-    let arr2: any = arr[1];
-    const set2 = new Set(arr2);
-    return arr1.filter((value: any) => set2.has(value));
-  }
-
-  // Route to create a new chat
-  app.post('/createChat', async (req, res) => {
-    const {name, userIds} = req.body;
-    try {
-        var arr: any[] = [];
-        for (const userId of userIds) {
-            const chats = await db.all(
-                `SELECT * FROM usersToChats WHERE idUser = ?`,
-                userId
-            );
-            var tmp = [];
-            for (const chat of chats) {
-                tmp.push(chat.idChat);
+    app.get('/getAccessToken', async function (req, res) {
+        const params = "?client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&code=" + req.query.code;
+        console.log("test1")
+        await fetch("https://github.com/login/oauth/access_token" + params, {
+            method: "POST",
+            headers: {
+                "Accept": "application/json"
             }
-            arr.push(tmp);
-        }
-        // console.log(intersection(...arr))
-        if (intersection(arr).length != 0) {
-            res.status(201).send('Chat already exists');
-        } else {
-        // Insert chat into chats table
-        const result = await db.run(
-            'INSERT INTO chats (name) VALUES (?)',
-            name
-        );
-        const chatId = result.lastID;
+        }).then((response) => {
+            return response.json();
+        }).then((data) => {
+            console.log(data);
+            res.json(data);
+        })
+    })
 
-            // Insert records into chatsToUsers table
+    app.get('/getUserData', async function (req, res) {
+        req.get("Authorization");
+        await fetch("https://api.github.com/user", {
+            method: "GET",
+            //   headers: {
+            //     "Authorization": req.get("Authorization")
+            //   }
+        }).then((response) => {
+            return response.json();
+        }).then((data) => {
+            console.log(data);
+            res.json(data);
+        })
+    })
+    function intersection(arr: any) {
+        let arr1: any = arr[0];
+        let arr2: any = arr[1];
+        const set2 = new Set(arr2);
+        return arr1.filter((value: any) => set2.has(value));
+    }
+
+    // Route to create a new chat
+    app.get('/getChat', async (req, res) => {
+        const {userIds} = req.body;
+        try {
+            var arr: any[] = [];
             for (const userId of userIds) {
-                await db.run(
-                    'INSERT INTO chatsToUsers (idChat, idUser) VALUES (?, ?)',
-                    [chatId, userId]
+                const chats = await db.all(
+                    `SELECT * FROM usersToChats WHERE idUser = ?`,
+                    userId
                 );
+                var tmp = [];
+                for (const chat of chats) {
+                    tmp.push(chat.idChat);
+                }
+                arr.push(tmp);
             }
+            // console.log(intersection(...arr))
+            if (intersection(arr).length != 0) {
+                res.json(intersection(arr));
+                res.status(201).send('Chat already exists');
+            } else {
+                res.status(201).send('Chat not found.');
+            }
+        } catch (error) {
+            console.error('Error finding chat:', error);
+            res.status(500).send('Error finding chat');
+        }});
+
+    // Route to create a new chat
+    app.post('/createChat', async (req, res) => {
+        const {name, userIds} = req.body;
+        try {
+            var arr: any[] = [];
+            for (const userId of userIds) {
+                const chats = await db.all(
+                    `SELECT * FROM usersToChats WHERE idUser = ?`,
+                    userId
+                );
+                var tmp = [];
+                for (const chat of chats) {
+                    tmp.push(chat.idChat);
+                }
+                arr.push(tmp);
+            }
+            // console.log(intersection(...arr))
+            if (intersection(arr).length != 0) {
+                res.json(intersection(arr));
+                res.status(201).send('Chat already exists');
+            } else {
+                // Insert chat into chats table
+                const result = await db.run(
+                    'INSERT INTO chats (name) VALUES (?)',
+                    name
+                );
+                const chatId = result.lastID;
+
+                // Insert records into chatsToUsers table
+                for (const userId of userIds) {
+                    await db.run(
+                        'INSERT INTO chatsToUsers (idChat, idUser) VALUES (?, ?)',
+                        [chatId, userId]
+                    );
+                }
 
 
-            res.status(201).send('Chat created successfully');
-        }
-    } catch (error) {
+                res.status(201).send('Chat created successfully');
+            }
+        } catch (error) {
             console.error('Error creating chat:', error);
             res.status(500).send('Error creating chat');
-    }});
+        }});
 
     // Route to get user by login and password
     app.get('/getUser', async (req, res) => {
@@ -220,10 +249,10 @@ const createApp = async () => {
         }
     });
 
-     
 
-     // Route to get all chats
-     app.get('/getChat/:chatId', async (req, res) => {
+
+    // Route to get all chats
+    app.get('/getChat/:chatId', async (req, res) => {
         const { chatId } = req.query;
         try {
             const chats = await db.all('SELECT FROM chats WHERE chatId = ?',
