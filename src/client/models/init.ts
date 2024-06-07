@@ -53,6 +53,9 @@ sample({
     clock: getUsersFx.doneData,
     target: $user
 })
+
 export const setCurrentChatUser = createEvent<SmallContact>();
-export const currentChatUserStore = createStore<SmallContact>({login: 'Start chatting'})
-    .on(setCurrentChatUser, (state, payload) => payload);
+export const currentChatUserStore = createStore<SmallContact>({
+    login: 'Start chatting',
+    chatId: 1
+}).on(setCurrentChatUser, (state, payload) => payload);

@@ -25,4 +25,5 @@ export interface Message {
 }
 export interface SmallContact{
     login: string,
+    chatId: number
 }

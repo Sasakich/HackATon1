@@ -37,7 +37,6 @@ function useInit<T>(store: Store<T>): T {
 const InputForm: FC<{ messages: M[] }> = ({ messages }) => {
     const currentChatUser = useInit(currentChatUserStore);
     const [username, password] = useUnit([$userInput, $password]);
-    const [activeChatUser, setActiveChatUser] = useState<SmallContact>({ login: 'start chatting' });
     const [inputValue, setInputValue] = useState<string>('');
     const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
     const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -95,7 +94,7 @@ const InputForm: FC<{ messages: M[] }> = ({ messages }) => {
                 if (info.file.response && info.file.response.url) {
                     message.success(`${info.file.name} file uploaded successfully`);
                     const timestamp = new Date().toISOString();
-                    socket.emit('chat message', { chatId: 1, userId: username, createdAt: timestamp, updatedAt: timestamp, text: "", name: "", image: info.file.response.url });
+                    socket.emit('chat message', { chatId: currentChatUser.chatId, userId: username, createdAt: timestamp, updatedAt: timestamp, text: "", name: "", image: info.file.response.url });
                 } else {
                     message.error(`${info.file.name} file upload failed: No URL in response`);
                 }

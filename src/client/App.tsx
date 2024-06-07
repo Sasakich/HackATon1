@@ -64,7 +64,9 @@ function App() {
             });
     };
     const [isModalOpen, setIsModalOpen] = useState(!isAuth()); // Управление видимостью модального окна
-
+    const getChatId = () => {
+        return 1
+    }
     const handleClose = () => {
         setIsModalOpen(false);
     };
@@ -88,7 +90,7 @@ function App() {
                         dataSource={contacts}
                         renderItem={contact => (
                             <div style={{display: 'flex', flexDirection: 'column'}}>
-                                <button onClick={() => setCurrentChatUser({login: contact.name})}>
+                                <button onClick={() => setCurrentChatUser({login: contact.name, chatId: getChatId()})}>
                                     <List.Item.Meta
                                         avatar={<Avatar>{contact.name.charAt(0)}</Avatar>}
                                         title={contact.name}
