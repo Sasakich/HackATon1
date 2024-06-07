@@ -8,7 +8,7 @@ import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 // import {userRoute} from "./controllers/user";
 // require('./generateIcon.js');
-// const getIcon: any = require('./generateIcon.js').getIcon;
+const getIcon: any = require('./generateIcon.js').getIcon;
 
 const CLIENT_ID = "2897c730c31dd10adb98";
 const CLIENT_SECRET = "5e58f80274b20bc1fe8cf264011d230290c4c72e";
@@ -146,6 +146,34 @@ const createApp = async () => {
     const set2 = new Set(arr2);
     return arr1.filter((value: any) => set2.has(value));
   }
+
+  // Route to create a new chat
+  app.post('/getChat', async (req, res) => {
+    const {userIds} = req.body;
+    try {
+        var arr: any[] = [];
+        for (const userId of userIds) {
+            const chats = await db.all(
+                `SELECT * FROM usersToChats WHERE idUser = ?`,
+                userId
+            );
+            var tmp = [];
+            for (const chat of chats) {
+                tmp.push(chat.idChat);
+            }
+            arr.push(tmp);
+        }
+        // console.log(intersection(...arr))
+        if (intersection(arr).length != 0) {
+            res.json(intersection(arr));
+            res.status(201).send('Chat already exists');
+        } else {
+            res.status(201).send('Chat not found.');
+        }
+    } catch (error) {
+            console.error('Error finding chat:', error);
+            res.status(500).send('Error finding chat');
+    }});
 
   // Route to create a new chat
   app.post('/createChat', async (req, res) => {
