@@ -148,7 +148,7 @@ const createApp = async () => {
   }
 
   // Route to create a new chat
-  app.post('/getChat', async (req, res) => {
+  app.get('/getChat', async (req, res) => {
     const {userIds} = req.body;
     try {
         var arr: any[] = [];
@@ -193,6 +193,7 @@ const createApp = async () => {
         }
         // console.log(intersection(...arr))
         if (intersection(arr).length != 0) {
+            res.json(intersection(arr));
             res.status(201).send('Chat already exists');
         } else {
         // Insert chat into chats table
