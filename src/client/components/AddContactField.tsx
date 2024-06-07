@@ -28,6 +28,7 @@ const AddContactField: React.FC<AddContactFieldProps> = ({ onAddContact }) => {
         formRef.current?.submit(); // Явная отправка формы
     };
 
+
     return (
         <form onSubmit={handleSubmit} className="chat-input-form" style={{ width: '100%' }}>
             <Input
@@ -37,7 +38,7 @@ const AddContactField: React.FC<AddContactFieldProps> = ({ onAddContact }) => {
                 placeholder="Type your contact name..."
                 className="chat-input"
             />
-            <Button  htmlType={'submit'} className="send-button">
+            <Button  htmlType={'submit'} className="send-button" >
                 <UserAddOutlined style={{ fontSize: '16px' }} />
             </Button>
         </form>

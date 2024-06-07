@@ -1,10 +1,12 @@
 import express, {Request, Response} from 'express';
 import sqlite3 from 'sqlite3';
 import {open} from 'sqlite';
+//const {isAuthenticatedMiddleware} = require('./middlewares/isAuthenticatedMiddleware');
+
 const cookieParser = require("cookie-parser");
 const passport = require('passport');
 const expressSession = require('express-session');
-const { myPassport } = require('./auth');
+const {myPassport} = require('./auth');
 import {withApiRoutes} from './controllers';
 import {Server} from 'socket.io';
 import http from 'http';
@@ -12,6 +14,7 @@ import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 // import {userRoute} from "./controllers/user";
 // require('./generateIcon.js');
+const { router } = require('./router');
 const getIcon: any = require('./generateIcon.js').getIcon;
 
 const CLIENT_ID = "2897c730c31dd10adb98";
@@ -21,6 +24,7 @@ const PORT = +(process.env.PORT || 0) || 3000;
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+export let gitUser : any;
 const createApp = async () => {
     const templateHtml = isProduction
         ? await readFile(join(__dirname, 'client', 'index.html'), 'utf-8')
@@ -33,6 +37,8 @@ const createApp = async () => {
     }));
     app.use(myPassport.initialize());
     app.use(myPassport.session());
+    //app.use(router);
+    // console.log(myPassport.deserializeUser())
     let viteServer: any;
 
     if (isProduction) {
@@ -52,19 +58,55 @@ const createApp = async () => {
         driver: sqlite3.Database
     });
 
+    // routers.get(
+    //     '/',
+    //     (req, res) => res.render('home', { user: req.user })
+    // );
+    //
+    // routers.get(
+    //     '/profile',
+    //     // Если пользователь не аутентифицирован, то отправляем на /
+    //     isAuthenticatedMiddleware,
+    //     // Иначе показываем его профиль
+    //     (req, res) => res.render('user', { user: req.user })
+    // );
+
     app.get('/auth/github', passport.authenticate('github'));
 
     app.get('/auth/github/callback',
-        passport.authenticate('github', { failureRedirect: 'http://localhost:3000' }),
+        passport.authenticate('github', {failureRedirect: 'http://localhost:3000'}),
         (req, res) => {
+
             console.log('passport auth callback fired');
             res.redirect('http://localhost:3000')
+            //console.log(req.cookies);
         }
+    )
+    app.get(
+        '/profile',
+        // Если пользователь не аутентифицирован, то отправляем на /
+        //isAuthenticatedMiddleware,
+        // Иначе показываем его профиль
+        (req, res) => console.log(req)
     );
+
+    app.get('/api/check-session', (req, res) => {
+        if (req.cookies.sessionId) {
+            // Проверка валидности куки
+            const sessionIsValid = true;
+            if (sessionIsValid) {
+                res.status(200).json({session: true});
+            } else {
+                res.status(401).json({session: false});
+            }
+        } else {
+            res.status(401).json({session: false});
+        }
+    });
     withApiRoutes(app);
-    app.use('/api/me',  async (_req: Request, res: Response) => {
+    app.use('/api/me', async (_req: Request, res: Response) => {
         // const name = names[new Date().getDay()];
-        const { login, password } = _req.query;
+        const {login, password} = _req.query;
         console.log("adasdasdasd")
         await db.all(
             'INSERT INTO users (id, login, password, icon) VALUES (?,?,?,?)',
@@ -117,7 +159,7 @@ const createApp = async () => {
 
     // Route to get all messages from one chat
     app.get('/getChatMessages', async (req, res) => {
-        const { chatId } = req.query;
+        const {chatId} = req.query;
         try {
             const messages = await db.all(
                 'SELECT * FROM messages WHERE chatId = ?',
@@ -130,89 +172,110 @@ const createApp = async () => {
         }
     });
 
-  app.get('/getAccessToken', async function (req, res) {
-    const params = "?client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&code=" + req.query.code;
-    console.log("test1")
-    await fetch("https://github.com/login/oauth/access_token" + params, {
-      method: "POST",
-      headers: {
-        "Accept": "application/json"
-      }
-    }).then((response) => {
-      return response.json();
-    }).then((data) => {
-      console.log(data);
-      res.json(data);
-    })
-  })
-
-  app.get('/getUserData', async function (req, res) {
-    req.get("Authorization");
-    await fetch("https://api.github.com/user", {
-      method: "GET",
-    //   headers: {
-    //     "Authorization": req.get("Authorization")
-    //   }
-    }).then((response) => {
-      return response.json();
-    }).then((data) => {
-      console.log(data);
-      res.json(data);
-    })
-  })
-  function intersection(arr: any) {
-    let arr1: any = arr[0];
-    let arr2: any = arr[1];
-    const set2 = new Set(arr2);
-    return arr1.filter((value: any) => set2.has(value));
-  }
-
-  // Route to create a new chat
-  app.post('/createChat', async (req, res) => {
-    const {name, userIds} = req.body;
-    try {
-        var arr: any[] = [];
-        for (const userId of userIds) {
-            const chats = await db.all(
-                `SELECT * FROM usersToChats WHERE idUser = ?`,
-                userId
-            );
-            var tmp = [];
-            for (const chat of chats) {
-                tmp.push(chat.idChat);
+    app.get('/getAccessToken', async function (req, res) {
+        const params = "?client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&code=" + req.query.code;
+        console.log("test1")
+        await fetch("https://github.com/login/oauth/access_token" + params, {
+            method: "POST",
+            headers: {
+                "Accept": "application/json"
             }
-            arr.push(tmp);
-        }
-        // console.log(intersection(...arr))
-        if (intersection(arr).length != 0) {
-            res.status(201).send('Chat already exists');
+        }).then((response) => {
+            return response.json();
+        }).then((data) => {
+            console.log(data);
+            res.json(data);
+        })
+    })
+
+    app.get('/getUserData', async function (req, res) {
+        req.get("Authorization");
+        await fetch("https://api.github.com/user", {
+            method: "GET",
+            //   headers: {
+            //     "Authorization": req.get("Authorization")
+            //   }
+        }).then((response) => {
+            return response.json();
+        }).then((data) => {
+            console.log(data);
+            res.json(data);
+        })
+    })
+
+    function intersection(arr: any) {
+        let arr1: any = arr[0];
+        let arr2: any = arr[1];
+        const set2 = new Set(arr2);
+        return arr1.filter((value: any) => set2.has(value));
+    }
+
+    app.get('/api/check-session', (req, res) => {
+        if (req.cookies.sessionId) {
+            console.log(req)
+            // Проверка валидности куки
+            const sessionIsValid = true; // Ваша логика проверки сессии
+            if (sessionIsValid) {
+                res.status(200).json({session: true});
+            } else {
+                res.status(401).json({session: false});
+            }
         } else {
-        // Insert chat into chats table
-        const result = await db.run(
-            'INSERT INTO chats (name) VALUES (?)',
-            name
-        );
-        const chatId = result.lastID;
-
-            // Insert records into chatsToUsers table
-            for (const userId of userIds) {
-                await db.run(
-                    'INSERT INTO chatsToUsers (idChat, idUser) VALUES (?, ?)',
-                    [chatId, userId]
-                );
-            }
-
-
-            res.status(201).send('Chat created successfully');
+            res.status(401).json({session: false});
         }
-    } catch (error) {
+    });
+
+    // Route to create a new chat
+    app.post('/createChat', async (req, res) => {
+        const {name, userIds} = req.body;
+        try {
+            var arr: any[] = [];
+            for (const userId of userIds) {
+                const chats = await db.all(
+                    `SELECT *
+                     FROM usersToChats
+                     WHERE idUser = ?`,
+                    userId
+                );
+                var tmp = [];
+                for (const chat of chats) {
+                    tmp.push(chat.idChat);
+                }
+                arr.push(tmp);
+            }
+            // console.log(intersection(...arr))
+            if (intersection(arr).length != 0) {
+                res.status(201).send('Chat already exists');
+            } else {
+                // Insert chat into chats table
+                const result = await db.run(
+                    'INSERT INTO chats (name) VALUES (?)',
+                    name
+                );
+                const chatId = result.lastID;
+
+                // Insert records into chatsToUsers table
+                for (const userId of userIds) {
+                    await db.run(
+                        'INSERT INTO chatsToUsers (idChat, idUser) VALUES (?, ?)',
+                        [chatId, userId]
+                    );
+                }
+
+
+                res.status(201).send('Chat created successfully');
+            }
+        } catch (error) {
             console.error('Error creating chat:', error);
             res.status(500).send('Error creating chat');
-    }});
+        }
+    });
 
     // Route to get user by login and password
     app.get('/getUser', async (req, res) => {
-        const { login, password } = req.query;
+        const {login, password} = req.query;
+        console.log(req.query)
+        gitUser = req.query.login;
         try {
             const user = await db.get(
                 'SELECT * FROM users WHERE login = ? AND password = ?',
@@ -227,7 +290,27 @@ const createApp = async () => {
             console.error('Error fetching user:', error);
             res.status(500).send('Error fetching user');
         }
+        console.log(gitUser)
     });
+
+    app.use(express.json()); // Не забудьте добавить эту строку для парсинга JSON
+
+    app.post('/createUser', async (req: Request, res: Response) => {
+        const {login, password, icon} = req.body;
+        gitUser = login
+        try {
+            await db.all(
+                'INSERT INTO users (id, login, password, icon) VALUES (?,?,?,?)',
+                [null, login, password, icon]
+            );
+            res.status(200).send("User created successfully");
+        } catch (error) {
+            res.status(500).send("Error creating user");
+        }
+        console.log(gitUser)
+    });
+
+
 
     // Route to get all chats
     app.get('/getChats', async (req, res) => {
@@ -240,11 +323,10 @@ const createApp = async () => {
         }
     });
 
-     
 
-     // Route to get all chats
-     app.get('/getChat/:chatId', async (req, res) => {
-        const { chatId } = req.query;
+    // Route to get all chats
+    app.get('/getChat/:chatId', async (req, res) => {
+        const {chatId} = req.query;
         try {
             const chats = await db.all('SELECT FROM chats WHERE chatId = ?',
                 chatId
@@ -333,6 +415,7 @@ const createApp = async () => {
     });
 
 
+
     const httpServer = http.createServer(app);
     const io = new Server(httpServer);
 
@@ -343,6 +426,7 @@ const createApp = async () => {
         socket.on('chat message', async msg => {
             const {chatId, userId, text, name, image} = msg;
             try {
+
                 // const db = await open({
                 //     filename: join(__dirname, 'database', 'database.db'),
                 //     driver: sqlite3.Database
