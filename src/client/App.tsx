@@ -60,13 +60,13 @@ function App() {
         try {
             const response = await fetch('/api/check-session', {
                 method: 'GET',
-                credentials: 'include' // Включение отправки куки с запросом
+                credentials: 'include'
             });
             const result = await response.json();
             setIsModalOpen(!result.session);
         } catch (error) {
             console.error('Ошибка проверки сессии', error);
-            setIsModalOpen(true); // В случае ошибки показываем модальное окно
+            setIsModalOpen(true);
         }
     };
 
@@ -75,13 +75,12 @@ function App() {
         const handler = (message: Message) => {
             setMessages(m => [...m, message]);
             api.info({
-                // message: `New message from ${name}`,
                 message: `New message from 1`,
                 description: '1',
                 placement: 'bottomRight',
             });
             if (navigator.vibrate) {
-                navigator.vibrate(200); // Вибрация на 200 миллисекунд
+                navigator.vibrate(200);
             }
         };
         socket.on('chat message', handler);

@@ -43,12 +43,12 @@ const InputForm: FC = () => {
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [messages, setMessages] = useState<M[]>([]);
-    const [isDarkTheme, setIsDarkTheme] = useState<boolean>(false); // Добавлено для переключения темы
+    const [isDarkTheme, setIsDarkTheme] = useState<boolean>(false);
 
     const toggleTheme = () => {
         setIsDarkTheme(prevState => !prevState);
     };
-    
+
     useEffect(() => {
         const fetchMessages = async () => {
             try {
@@ -72,6 +72,16 @@ const InputForm: FC = () => {
         if (currentChatUser?.chatId) {
             fetchMessages();
         }
+
+        // Listen for incoming messages
+        socket.on('chat message', (message: M) => {
+            setMessages(prevMessages => [...prevMessages, message]);
+        });
+
+        // Clean up socket listener
+        return () => {
+            socket.off('chat message');
+        };
     }, [currentChatUser]);
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -82,7 +92,8 @@ const InputForm: FC = () => {
         event.preventDefault();
         if (inputValue.trim() !== '') {
             const timestamp = new Date().toISOString();
-            socket.emit('chat message', { chatId: currentChatUser.chatId, userId: username, createdAt: timestamp, updatedAt: timestamp, text: inputValue, name: "", image: "" });
+            const message = { chatId: currentChatUser.chatId, userId: username, createdAt: timestamp, updatedAt: timestamp, text: inputValue, name: "", image: "" };
+            socket.emit('chat message', message);
             setInputValue('');
         }
     };
@@ -114,25 +125,27 @@ const InputForm: FC = () => {
 
     const uploadProps: UploadProps = {
         name: 'file',
-        action: '/upload',  // путь к серверному маршруту для загрузки
+        action: '/upload',
         headers: {
-            authorization: 'authorization-text',  // заголовок
+            authorization: 'authorization-text',
         },
         onChange(info) {
             if (info.file.status !== 'uploading') {
                 console.log(info.file, info.fileList);
             }
             if (info.file.status === 'done') {
-                console.log('Upload response:', info.file.response);  // логируем ответ сервера
-                if (info.file.response && info.file.response.url) {  // сервер возвращает url
+                console.log('Upload response:', info.file.response);
+                if (info.file.response && info.file.response.url) {
                     message.success(`${info.file.name} file uploaded successfully`);
                     const timestamp = new Date().toISOString();
-                    socket.emit('chat message', { chatId: currentChatUser.chatId, userId: username, createdAt: timestamp, updatedAt: timestamp, text: "", name: "", image: info.file.response.url });
+                    const imageMessage = { chatId: currentChatUser.chatId, userId: username, createdAt: timestamp, updatedAt: timestamp, text: "", name: "", image: info.file.response.url };
+                    socket.emit('chat message', imageMessage);
+                    setMessages(prevMessages => [...prevMessages, imageMessage]);
                 } else {
                     message.error(`${info.file.name} file upload failed: No URL in response`);
                 }
             } else if (info.file.status === 'error') {
-                console.error('Upload error:', info.file.error);  // логируем ошибку
+                console.error('Upload error:', info.file.error);
                 message.error(`${info.file.name} file upload failed.`);
             }
         },
@@ -140,9 +153,9 @@ const InputForm: FC = () => {
 
     return (
         <div className="chat-container">
-            <button className='small-contact' onClick={openModal} style={{ 
-                paddingBottom: '25px', 
-                paddingTop: '25px',  
+            <button className='small-contact' onClick={openModal} style={{
+                paddingBottom: '25px',
+                paddingTop: '25px',
                 borderLeft: 'none',
                 borderTop: 'none',
                 borderRight: 'none',
@@ -183,10 +196,10 @@ const InputForm: FC = () => {
                         </div>
                     )}
                 </div>
-                <Button 
-                    htmlType='submit' 
-                    className="send-button" 
-                    icon={<SendOutlined style={{ fontSize: '35px' }} />} 
+                <Button
+                    htmlType='submit'
+                    className="send-button"
+                    icon={<SendOutlined style={{ fontSize: '35px' }} />}
                     style={{ border: 'none' }}
                 />
             </form>

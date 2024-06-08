@@ -24,9 +24,9 @@ export interface Message {
     createdAt: string;
 }
 export interface SmallContact{
-    login: string,
-    chatId: number,
-    userId: number
+    login: string | null,
+    chatId: number | null,
+    userId: number | null
 }
 export interface CurrentUser{
     username: string,

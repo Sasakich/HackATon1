@@ -56,9 +56,9 @@ sample({
 
 export const setCurrentChatUser = createEvent<SmallContact>();
 export const currentChatUserStore = createStore<SmallContact>({
-    login: 'Start chatting',
-    chatId: -1,
-    userId: 0
+    login: 'start chatting',
+    chatId: null,
+    userId: null
 }).on(setCurrentChatUser, (state, payload) => payload);
 export const setCurrentUser = createEvent<CurrentUser>();
 export const currentUserStore = createStore<CurrentUser>({
