@@ -10,7 +10,7 @@ import { useUnit } from "effector-react";
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { Store } from "effector";
 
-// Типы сообщений и пользователя
+
 type ChatUser = {
     login: string;
     chatId: string;
@@ -22,7 +22,7 @@ interface Message {
     timestamp: string;
 }
 
-// Кастомный хук для подписки на стор и обновления компонента
+
 function useInit<T>(store: Store<T>): T {
     const [state, setState] = useState(store.getState());
     useEffect(() => {
@@ -73,12 +73,12 @@ const InputForm: FC = () => {
             fetchMessages();
         }
 
-        // Listen for incoming messages
+
         socket.on('chat message', (message: M) => {
             setMessages(prevMessages => [...prevMessages, message]);
         });
 
-        // Clean up socket listener
+
         return () => {
             socket.off('chat message');
         };
