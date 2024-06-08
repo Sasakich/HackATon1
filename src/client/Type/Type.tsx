@@ -23,3 +23,12 @@ export interface Message {
     userId: string;
     createdAt: string;
 }
+export interface SmallContact{
+    login: string,
+    chatId: number,
+    userId: number
+}
+export interface CurrentUser{
+    username: string,
+    userId : number
+}

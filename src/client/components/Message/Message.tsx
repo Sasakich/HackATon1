@@ -45,13 +45,13 @@ const Message: FC<{messages: M[]}> = ({messages}) => {
     // const currentUserId = $userInput;
 
     return (
-        <div style={{ width: '100%', listStyleType: 'none'}}>
+        <div style={{ width: '100%', listStyleType: 'none', display: 'flex', flexDirection: 'column-reverse'}}>
             <VirtualList
                 data={messages.map(x => ({
                     text: x.message,
                     userId: x.userId,
                     timestamp: x.createdAt,
-                    isCurrentUser: x.userId === userInput
+                    isCurrentUser: x.userId == userInput
                 }))}
                 // data={messages.map(x => x['text'] + " - " + x["userId"])}
                 height={viewportHeight - 52}
@@ -67,7 +67,7 @@ const Message: FC<{messages: M[]}> = ({messages}) => {
                                    margin: '5px'
                                }}>
                         <div style={{
-                            backgroundColor: item.isCurrentUser ? '#e6f7ff' : '#f0f2f5',
+                            backgroundColor: item.isCurrentUser ? '#e1d2c0' : '#ffffff',
                             padding: '10px',
                             borderRadius: '10px',
                         }}>

@@ -13,3 +13,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.chat-form{
+  display: flex;
+}
+.small-contact{
+  justify-self: right;
+  width: 100%;
+}
