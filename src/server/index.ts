@@ -54,6 +54,18 @@ const createApp = async () => {
         driver: sqlite3.Database
     });
     withApiRoutes(app);
+    app.get('/auth/github', passport.authenticate('github'));
+
+    app.get('/auth/github/callback',
+        passport.authenticate('github', {failureRedirect: 'http://localhost:3000'}),
+        (req, res) => {
+
+            console.log('passport auth callback fired');
+            res.redirect('http://localhost:3000')
+            //console.log(req.cookies);
+        }
+    )
+
     app.use('/api/me',  async (_req: Request, res: Response) => {
         // const name = names[new Date().getDay()];
         const { login, password } = _req.query;
@@ -80,6 +92,19 @@ const createApp = async () => {
             res.json(data);
         })
     })
+    app.get('/api/check-session', (req, res) => {
+        if (req.cookies.sessionId) {
+            // Проверка валидности куки
+            const sessionIsValid = true;
+            if (sessionIsValid) {
+                res.status(200).json({session: true});
+            } else {
+                res.status(401).json({session: false});
+            }
+        } else {
+            res.status(401).json({session: false});
+        }
+    });
 
     app.get('/getUserData', async function (req, res) {
         req.get("Authorization");

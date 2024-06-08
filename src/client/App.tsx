@@ -22,6 +22,11 @@ function isAuth() {
 const getInitialTheme = () => {
     return localStorage.getItem('theme') || 'light';
 }
+function checkSessionCookie() {
+
+    return document.cookie.split(';').some(cookie => cookie.trim().startsWith('sessionId='));
+}
+
 function App() {
     const currentUser = useUnit(currentUserStore)
     const [messages, setMessages] = useState<Message[]>([]);
@@ -30,6 +35,7 @@ function App() {
     const [activeDialog, setActiveDialog] = useState<{}>({});
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [api, contextHolder] = notification.useNotification();
+    const [isModalOpen, setIsModalOpen] = useState(checkSessionCookie());
     const fakeDataUrl =
         'https://randomuser.me/api/?results=20&inc=name,gender,email,nat,picture&noinfo';
     const [data, setData] = useState<UserItem[]>([]);
@@ -49,7 +55,23 @@ function App() {
     //         window.removeEventListener('resize', handleResize);
     //     };
     // }, []);
+
+    const checkSession = async () => {
+        try {
+            const response = await fetch('/api/check-session', {
+                method: 'GET',
+                credentials: 'include' // Включение отправки куки с запросом
+            });
+            const result = await response.json();
+            setIsModalOpen(!result.session);
+        } catch (error) {
+            console.error('Ошибка проверки сессии', error);
+            setIsModalOpen(true); // В случае ошибки показываем модальное окно
+        }
+    };
+
     useEffect(() => {
+        checkSession().then(r => console.log(r))
         const handler = (message: Message) => {
             setMessages(m => [...m, message]);
             api.info({
@@ -81,7 +103,7 @@ function App() {
                 setData(data.concat(body.results));
             });
     };
-    const [isModalOpen, setIsModalOpen] = useState(true);
+
     const getUserId = async (username: string) => {
         console.log("FINDING USER BY ID")
         try {
