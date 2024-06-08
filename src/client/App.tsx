@@ -8,22 +8,23 @@ import Modal from './components/Modal';
 import AddContactField from "./components/AddContactField";
 import { io } from 'socket.io-client';
 import { socket } from "./models/socket";
-import {currentChatUserStore, currentUserStore, setCurrentChatUser} from "./models/init";
-import {useStore, useUnit} from 'effector-react';
+import { currentChatUserStore, currentUserStore, setCurrentChatUser } from "./models/init";
+import { useStore, useUnit } from 'effector-react';
+
 let init = false;
+
 interface Contact {
     id: string;
     name: string;
 }
 
 function isAuth() {
-  return Boolean(localStorage.getItem("accessToken"))
+    return Boolean(localStorage.getItem("accessToken"))
 }
 const getInitialTheme = () => {
     return localStorage.getItem('theme') || 'light';
 }
 function checkSessionCookie() {
-
     return document.cookie.split(';').some(cookie => cookie.trim().startsWith('sessionId='));
 }
 
@@ -36,6 +37,7 @@ function App() {
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [api, contextHolder] = notification.useNotification();
     const [isModalOpen, setIsModalOpen] = useState(checkSessionCookie());
+    const [couldAddContact, setCouldAddContact] = useState(true)
     const fakeDataUrl =
         'https://randomuser.me/api/?results=20&inc=name,gender,email,nat,picture&noinfo';
     const [data, setData] = useState<UserItem[]>([]);
@@ -45,16 +47,6 @@ function App() {
         setTheme(nextTheme)
         localStorage.setItem('theme', nextTheme)
     }
-    // useEffect(() => {
-    //     const handleResize = () => {
-    //         setViewportHeight(window.innerHeight);
-    //     };
-    //     window.addEventListener('resize', handleResize);
-    //     appendData();
-    //     return () => {
-    //         window.removeEventListener('resize', handleResize);
-    //     };
-    // }, []);
 
     const checkSession = async () => {
         try {
@@ -127,7 +119,7 @@ function App() {
             console.error('Error fetching chat ID:', error);
         }
     }
-    const getChatId = async (firstUserId : number, secondUserId : number) => {
+    const getChatId = async (firstUserId: number, secondUserId: number) => {
         try {
             const response = await fetch("http://localhost:3000/createChat", {
                 method: "POST",
@@ -159,10 +151,17 @@ function App() {
         setIsModalOpen(false);
     };
     const handleAddContact = (name: string) => {
-        console.log("ADDING CONTACT")
-        const newContact = { id: `${Date.now()}`, name };
-        setContacts(prevContacts => [...prevContacts, newContact]);
-        setIsModalOpen(false);
+        getUserId(name).then(res => {
+            if (res) {
+                console.log("ADDING CONTACT")
+                const newContact = { id: `${Date.now()}`, name };
+                setContacts(prevContacts => [...prevContacts, newContact]);
+                setIsModalOpen(false);
+                setCouldAddContact(true);
+            } else {
+                setCouldAddContact(false);
+            }
+        })
     };
     currentChatUserStore.watch((state) => {
         console.log('Current chat user:', state);
@@ -173,9 +172,10 @@ function App() {
     return (
         <div className="App">
             {contextHolder}
-            <List style={{width: 'auto', flexDirection: 'row', minWidth: '30%'}}>
+            <List style={{ width: 'auto', flexDirection: 'row', minWidth: '30%' }}>
                 <List style={{ width: 'auto', flexDirection: 'row', minWidth: '30%' }}>
                     <AddContactField onAddContact={handleAddContact} />
+                    {!couldAddContact && <p style={{ color: 'red' }}>No users with this username</p>}
                     <List
                         itemLayout="horizontal"
                         dataSource={contacts}
@@ -218,17 +218,13 @@ function App() {
                 <Modal isOpen={isModalOpen} onClose={handleClose} />
             </List>
             <div className={'chat-form'}>
-
-                <InputForm/>
+                <InputForm />
             </div>
-            <Modal isOpen={isModalOpen} onClose={handleClose}/>
+            <Modal isOpen={isModalOpen} onClose={handleClose} />
             {}
-
             {}
         </div>
     );
 }
 
 export default App;
-
-

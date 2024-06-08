@@ -1,0 +1,99 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(#ADD8E6, 62%, pink);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+.backgroundText {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10rem;
+    font-family: 'Bebas Neue', sans-serif;
+    color: rgba(0, 0, 0, 0.1);
+    z-index: 0;
+    pointer-events: none;
+    letter-spacing: 1rem;
+}
+
+@media (max-width: 768px) {
+    .backgroundText {
+        font-size: 5rem;
+        letter-spacing: 0.5rem;
+    }
+}
+
+.modal {
+    position: relative;
+    z-index: 1;
+    background: linear-gradient(pink, 28%, #ADD8E6);
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    font-family: 'Bebas Neue', sans-serif;
+}
+
+@media (max-width: 768px) {
+    .modal {
+        padding: 0.5rem;
+    }
+}
+
+.title {
+    margin-bottom: 1rem;
+}
+
+.label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.input {
+    display: block;
+    margin: 5px 0;
+    width: 100%;
+    padding: 0.5rem;
+    color: #696969;
+}
+
+.buttonContainer {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+}
+
+.button {
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: none;
+    background: #696969;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Bebas Neue', sans-serif;
+}
+
+.errorMessage {
+    color: red;
+    margin-bottom: 1rem;
+}

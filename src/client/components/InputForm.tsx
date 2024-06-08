@@ -10,7 +10,6 @@ import { useUnit } from "effector-react";
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { Store } from "effector";
 
-
 type ChatUser = {
     login: string;
     chatId: string;
@@ -21,7 +20,6 @@ interface Message {
     sender: string;
     timestamp: string;
 }
-
 
 function useInit<T>(store: Store<T>): T {
     const [state, setState] = useState(store.getState());
@@ -73,11 +71,9 @@ const InputForm: FC = () => {
             fetchMessages();
         }
 
-
         socket.on('chat message', (message: M) => {
             setMessages(prevMessages => [...prevMessages, message]);
         });
-
 
         return () => {
             socket.off('chat message');
@@ -165,44 +161,46 @@ const InputForm: FC = () => {
                 {currentChatUser?.login ?? 'No User'}
             </button>
             <Message messages={messages} />
-            <form onSubmit={handleSubmit} className="chat-input-form">
-                <Upload {...uploadProps}>
-                    <Button icon={<PaperClipOutlined style={{ fontSize: '35px' }} />}
-                            className="upload-button"
-                            style={{ border: 'none' }}
-                    />
-                </Upload>
-                <div className="input-with-emoji">
-                    <Input
-                        type="text"
-                        value={inputValue}
-                        onChange={handleInputChange}
-                        placeholder="Type your message..."
-                        className="chat-input"
-                        style={{ paddingLeft: '30px', border: 'none' }}
-                    />
+            {currentChatUser?.chatId && (
+                <form onSubmit={handleSubmit} className="chat-input-form">
+                    <Upload {...uploadProps}>
+                        <Button icon={<PaperClipOutlined style={{ fontSize: '35px' }} />}
+                                className="upload-button"
+                                style={{ border: 'none' }}
+                        />
+                    </Upload>
+                    <div className="input-with-emoji">
+                        <Input
+                            type="text"
+                            value={inputValue}
+                            onChange={handleInputChange}
+                            placeholder="Type your message..."
+                            className="chat-input"
+                            style={{ paddingLeft: '30px', border: 'none' }}
+                        />
+                        <Button
+                            type="default"
+                            onClick={handleEmojiButtonClick}
+                            className="emoji-button"
+                            style={{ fontSize: '30px', width: '60px', lineHeight: '20px' }}
+                        >
+                            😀
+                        </Button>
+                        {showEmojiPicker && (
+                            <div className="emoji-picker-container" onMouseEnter={handleMouseEnter}
+                                 onMouseLeave={handleMouseLeave}>
+                                <EmojiPicker onEmojiClick={handleEmojiClick} />
+                            </div>
+                        )}
+                    </div>
                     <Button
-                        type="default"
-                        onClick={handleEmojiButtonClick}
-                        className="emoji-button"
-                        style={{ fontSize: '30px', width: '60px', lineHeight: '20px' }}
-                    >
-                        😀
-                    </Button>
-                    {showEmojiPicker && (
-                        <div className="emoji-picker-container" onMouseEnter={handleMouseEnter}
-                             onMouseLeave={handleMouseLeave}>
-                            <EmojiPicker onEmojiClick={handleEmojiClick} />
-                        </div>
-                    )}
-                </div>
-                <Button
-                    htmlType='submit'
-                    className="send-button"
-                    icon={<SendOutlined style={{ fontSize: '35px' }} />}
-                    style={{ border: 'none' }}
-                />
-            </form>
+                        htmlType='submit'
+                        className="send-button"
+                        icon={<SendOutlined style={{ fontSize: '35px' }} />}
+                        style={{ border: 'none' }}
+                    />
+                </form>
+            )}
             <Modal
                 title="User Profile"
                 visible={modalIsOpen}
