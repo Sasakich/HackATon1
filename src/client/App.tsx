@@ -124,12 +124,12 @@ function App() {
             }
             const data = await response.json();
             console.log(data);
-            if (data.chatId) {
-                console.log('Chat ID:', data.chatId);
-                localStorage.setItem("chatId", data.chatId);
+            if (data.id) {
+                console.log('Chat ID:', data.id);
+                localStorage.setItem("chatId", data.id);
             }
 
-            return data.chatId;
+            return data.id;
         } catch (error) {
             console.error('Error fetching chat ID:', error);
         }

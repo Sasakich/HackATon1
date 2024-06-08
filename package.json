@@ -15,6 +15,7 @@
   "packageManager": "pnpm@9.1.4",
   "dependencies": {
     "@ant-design/icons": "5.3.7",
+    "@aws-sdk/client-s3": "^3.540.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -29,6 +30,7 @@
     "antd": "^5.15.4",
     "bcrypt": "5.1.1",
     "body-parser": "1.20.2",
+    "cookie-parser": "1.4.6",
     "effector": "^23.2.0",
     "effector-react": "^23.2.0",
     "emoji-picker-react": "^4.9.3",
@@ -37,14 +39,18 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.6",
     "express": "4.19.2",
+    "express-sesssion": "1.15.5",
     "node-fetch": "3.3.2",
     "nodemon": "3.1.0",
     "npm-run-all": "4.1.5",
+    "passport": "0.7.0",
+    "passport-github": "1.1.0",
     "prettier": "3.2.5",
     "rc-virtual-list": "3.14.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.3",
+    "react-router-native": "6.23.1",
     "react-scripts": "5.0.1",
     "sirv": "2.0.4",
     "socket.io": "4.7.5",
@@ -53,10 +59,15 @@
     "sqlite3": "5.1.7",
     "ts-node": "10.9.2",
     "typescript": "^4.9.5",
+    "uuid": "^9.0.1",
     "vite": "5.2.0",
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
-    "@types/bcrypt": "5.0.2"
+    "@aws-sdk/client-s3": "^3.540.0",
+    "@types/bcrypt": "5.0.2",
+    "dotenv": "16.4.5",
+    "identicon": "3.1.1",
+    "uuid": "^9.0.1"
   }
 }

@@ -126,44 +126,117 @@ const Modal: FC<ModalProps> = ({ isOpen, onClose }) => {
   };
 
   if (!isOpen) return null;
-
+  const handleLogin = () => {
+    window.location.href = "/auth/github";
+  }
   return (
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}>
-        <div style={{ backgroundColor: '#fff', padding: 20 }}>
-          <p>Пожалуйста, введите свои данные</p>
-          <form onSubmit={handleSubmit}>
-            <label style={{ display: 'block', marginBottom: '10px' }}>
-              Имя пользователя:
-              <input type="text" value={username} onChange={handleUsernameChange}
-                     style={{ display: 'block', margin: '5px 0', width: 250 }} />
-            </label>
-            <label style={{ display: 'block', marginBottom: '10px' }}>
-              Пароль:
-              <input type="password" value={password} onChange={handlePasswordChange}
-                     style={{ display: 'block', margin: '5px 0', width: 250 }} />
-            </label>
-            <div style={{ backgroundColor: '#fff', padding: 20, display: "flex" }}>
-              <button type="button" style={{ display: 'block', margin: '10px' }} onClick={aboba}>Войти</button>
-              <button type="button" style={{ display: 'block', margin: '10px' }} onClick={loginWithGithub}>Войти с помощью
-                gitHub
-              </button>
-              <button type="button" style={{ display: 'block', margin: '10px' }} onClick={handleRegister}>Зарегистрироваться
-              </button>
-            </div>
-          </form>
+      <div style={styles.overlay}>
+        <div style={styles.container}>
+          <div style={styles.backgroundText}>KILOGRAM</div>
+          <div style={styles.modal}>
+            <p style={styles.title}>Please enter your details</p>
+            <form onSubmit={handleSubmit}>
+              <label style={styles.label}>
+                User Name:
+                <input type="text" value={username} onChange={handleUsernameChange} style={styles.input} />
+              </label>
+              <label style={styles.label}>
+                Password:
+                <input type="password" value={password} onChange={handlePasswordChange} style={styles.input} />
+              </label>
+              <div style={styles.buttonContainer}>
+                <button type="submit" style={styles.button} onClick={aboba}>Sign in</button>
+                <button type="submit" style={styles.button} onClick={handleRegister}>Register</button>
+                <button type="button" style={styles.button} onClick={handleLogin}>Sign in with GitHub</button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
   );
+};
+
+const styles = {
+  overlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'linear-gradient(#ADD8E6, 62%, pink)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  container: {
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '1rem',
+  },
+  backgroundText: {
+    position: 'absolute',
+    top: '30%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    fontSize: '10rem',
+    fontFamily: 'Bebas Neue, sans-serif',
+    color: 'rgba(0, 0, 0, 0.1)',
+    zIndex: 0,
+    pointerEvents: 'none',
+    letterSpacing: '1rem',
+    '@media (max-width: 768px)': {
+      fontSize: '5rem',
+      letterSpacing: '0.5rem',
+    },
+  },
+  modal: {
+    position: 'relative',
+    zIndex: 1,
+    background: 'linear-gradient(pink, 28%, #ADD8E6)',
+    padding: '1rem',
+    borderRadius: '10px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+    width: '100%',
+    maxWidth: '400px',
+    fontFamily: 'Bebas Neue, sans-serif',
+    '@media (max-width: 768px)': {
+      padding: '0.5rem',
+    },
+  },
+  title: {
+    marginBottom: '1rem',
+  },
+  label: {
+    display: 'block',
+    marginBottom: '10px',
+  },
+  input: {
+    display: 'block',
+    margin: '5px 0',
+    width: '100%',
+    padding: '0.5rem',
+    color: '#696969',
+  },
+  buttonContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '5px',
+  },
+  button: {
+    padding: '10px 20px',
+    borderRadius: '5px',
+    border: 'none',
+    background: '#696969',
+    color: '#fff',
+    cursor: 'pointer',
+    fontFamily: 'Bebas Neue, sans-serif',
+  },
 };
 
 export default Modal;
