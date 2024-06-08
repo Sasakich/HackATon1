@@ -6,6 +6,7 @@ import {Server} from 'socket.io';
 import http from 'http';
 import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
+import cors from 'cors'
 // import {userRoute} from "./controllers/user";
 // require('./generateIcon.js');
 const getIcon: any = require('./generateIcon.js').getIcon;
@@ -23,6 +24,8 @@ const createApp = async () => {
         : '';
 
     const app = express();
+    app.use(cors())
+    app.use(express.json())
     let viteServer: any;
 
     if (isProduction) {
@@ -218,16 +221,34 @@ const createApp = async () => {
             console.error('Error creating chat:', error);
             res.status(500).send('Error creating chat');
     }});
+    app.post('/register', async (req, res) => {
+        const { login, password } = req.body;
+        if (!login || !password) {
+            return res.status(400).json({ message: 'Missing login or password' });
+        }
+        try {
+            const userExists = await db.get('SELECT * FROM users WHERE login = ?', [login]);
+            if (userExists) {
+                return res.status(409).json({ message: 'User already exists' });
+            }
 
+            await db.run('INSERT INTO users (login, password) VALUES (?, ?)', [login, password]);
+            return res.status(201).json({ message: 'User registered successfully' });
+        } catch (error) {
+            console.error('Error registering user:', error);
+            return res.status(500).send('Internal Server Error');
+        }
+    });
     // Route to get user by login and password
-    app.get('/getUser', async (req, res) => {
-        const { login, password } = req.query;
+    app.post('/getUser', async (req, res) => {
+        const { username, password } = req.body;
         try {
             const user = await db.get(
                 'SELECT * FROM users WHERE login = ? AND password = ?',
-                [login, password]
+                [username, password]
             );
             if (user) {
+                console.log(user);
                 res.json(user);
             } else {
                 res.status(404).send('User not found');
